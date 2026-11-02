@@ -28,7 +28,7 @@ html,body{overscroll-behavior-y:none}
 :root{
   --bg:#F6F4F5; --card:#FFFFFF; --sunken:#EFECEE; --soft:#FAF8F9; --line:#E8E3E6; --line2:#D9D2D6;
   --fg:#1A1418; --fg2:#5A5157; --fg3:#7B7178; --fg4:#A69CA2; --ring:#C9C0C5;
-  --accent:#F2357E; --accent-ink:#C21864; --accent-weak:#FFE6EF; --on-accent:#FFFFFF;
+  --accent:#1F3A93; --accent-ink:#1F3A93; --accent-weak:#E6EBF8; --on-accent:#FFFFFF;
   --peach:#FFB27A; --peach-weak:#FFF0E4;
   --red:#C2362B; --red-weak:#FBEAE7; --sat:#2B5FB8;
   --violet:#6B3FC4; --violet-weak:#F0EAFB; --violet-dot:#8B63E0;
@@ -43,7 +43,7 @@ html,body{overscroll-behavior-y:none}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#100E0F; --card:#1A1719; --sunken:#242023; --soft:#1D1A1C; --line:#2E292C; --line2:#3B3539;
   --fg:#EEF1EE; --fg2:#B2B9B4; --fg3:#949B96; --fg4:#6E7570; --ring:#4A514C;
-  --accent:#FF5C9E; --accent-ink:#FF8CB8; --accent-weak:#3A1626; --on-accent:#FFFFFF;
+  --accent:#4E6FD8; --accent-ink:#A9BFF5; --accent-weak:#1B2546; --on-accent:#FFFFFF;
   --peach:#F0904A; --peach-weak:#382616;
   --red:#FF7A6E; --red-weak:#3A1D1A; --sat:#82A8F0;
   --violet:#C3A6FF; --violet-weak:#2A2340; --violet-dot:#A786F5;
@@ -54,7 +54,7 @@ html,body{overscroll-behavior-y:none}
 :root[data-theme="dark"]{
   --bg:#100E0F; --card:#1A1719; --sunken:#242023; --soft:#1D1A1C; --line:#2E292C; --line2:#3B3539;
   --fg:#EEF1EE; --fg2:#B2B9B4; --fg3:#949B96; --fg4:#6E7570; --ring:#4A514C;
-  --accent:#FF5C9E; --accent-ink:#FF8CB8; --accent-weak:#3A1626; --on-accent:#FFFFFF;
+  --accent:#4E6FD8; --accent-ink:#A9BFF5; --accent-weak:#1B2546; --on-accent:#FFFFFF;
   --peach:#F0904A; --peach-weak:#382616;
   --red:#FF7A6E; --red-weak:#3A1D1A; --sat:#82A8F0;
   --violet:#C3A6FF; --violet-weak:#2A2340; --violet-dot:#A786F5;
@@ -221,10 +221,8 @@ button.card:hover,button.mini:hover{border-color:var(--line2)}
 .head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .couple{display:inline-flex;align-items:center;gap:6px;background:var(--accent-weak);color:var(--accent-ink);border-radius:99px;padding:5px 11px 5px 5px;font-size:12.5px;font-weight:600;white-space:nowrap}
 .couple i{display:block;width:20px;height:20px;border-radius:10px;border:2px solid var(--accent-weak)}
-.couple i:first-child{background:var(--peach)}
-.couple i+i{background:var(--accent);margin-left:-8px}
+.couple i+i{margin-left:-8px}
 .couple.wait{background:var(--sunken);color:var(--fg3)}
-.couple.wait i+i{background:var(--ring)}
 .balcard{display:flex;align-items:center;gap:12px;width:100%}
 .balcard .ic{width:40px;height:40px;border-radius:12px;background:var(--accent-weak);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .balcard .bt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -280,7 +278,7 @@ button.card:hover,button.mini:hover{border-color:var(--line2)}
 .codein:focus{border-color:var(--accent)}
 
 /* fab */
-.fab{position:fixed;right:20px;bottom:calc(92px + env(safe-area-inset-bottom,0px));width:52px;height:52px;border-radius:17px;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(242,53,126,.32);z-index:15;transition:transform .12s}
+.fab{position:fixed;right:20px;bottom:calc(92px + env(safe-area-inset-bottom,0px));width:52px;height:52px;border-radius:17px;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 35%,transparent);z-index:15;transition:transform .12s}
 .fab:active{transform:scale(.92)}
 .fab svg{width:24px;height:24px}
 
@@ -385,6 +383,14 @@ i.tm{font-style:normal}
 .tl-now::before{content:"";position:absolute;left:0;top:-4px;width:10px;height:10px;border-radius:5px;background:var(--accent)}
 .tl-ghost{position:absolute;left:2px;right:2px;border-radius:7px;background:var(--accent-weak);border:1.5px dashed var(--accent);color:var(--accent-ink);font-size:12px;font-weight:600;padding:3px 7px;z-index:6;pointer-events:none}
 .tl-help{padding:0 6px}
+.cdot{width:22px;height:22px;border-radius:11px;background:var(--accent);box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--line2)}
+.hbtns{display:flex;gap:2px;align-items:center}
+.swgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.swb{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:14px;border:1.5px solid var(--line);background:var(--soft);font-size:13.5px;font-weight:500;text-align:center}
+.swb i{width:34px;height:34px;border-radius:17px;display:block}
+.swb[aria-pressed="true"]{border-color:var(--fg);background:var(--card)}
+.swb small{font-size:11.5px;color:var(--fg3);font-weight:400}
+.invite{border:1px solid var(--accent);background:var(--accent-weak);color:var(--accent-ink);border-radius:14px;padding:12px 14px;font-size:14px;font-weight:500}
 </style>
 </head>
 <body>
@@ -478,6 +484,27 @@ function jpHolidays(y){
   Object.keys(H).sort().forEach(function(s){var p=parse(s);if(dow(p.y,p.m,p.d)===0){var t=addDays(s,1);while(H[t])t=addDays(t,1);H[t]='대체휴일'}});
   return JC[y]=H;
 }
+
+/* ================= 사람별 하이라이트 색 =================
+   [진한색, 글씨색, 옅은 바탕, 버튼 위 글씨] — 밝은 모드 l, 어두운 모드 d. 미나의 하루 핫핑크와 겹치지 않게. */
+var PAL={
+  navy:{n:'네이비',l:['#1F3A93','#1F3A93','#E6EBF8','#FFFFFF'],d:['#4E6FD8','#A9BFF5','#1B2546','#FFFFFF']},
+  tiffany:{n:'티파니 블루',l:['#0ABAB5','#087A76','#DDF5F4','#062F2D'],d:['#0ABAB5','#5ED8D3','#0F3331','#062F2D']},
+  orange:{n:'찐 주황',l:['#E8590C','#B8460A','#FFE9DA','#FFFFFF'],d:['#E8590C','#FFA36B','#3A2012','#FFFFFF']},
+  green:{n:'숲 초록',l:['#2F7D4F','#246140','#E2F1E8','#FFFFFF'],d:['#3E9E66','#8FD6AE','#15301F','#FFFFFF']},
+  violet:{n:'보라',l:['#6D4AD6','#5536B8','#EEEAFC','#FFFFFF'],d:['#7E62E0','#C3B2FF','#2A2340','#FFFFFF']}
+};
+(function(){
+  function v(a){return '--accent:'+a[0]+';--accent-ink:'+a[1]+';--accent-weak:'+a[2]+';--on-accent:'+a[3]+';'}
+  var css='';
+  Object.keys(PAL).forEach(function(k){var p=PAL[k];
+    css+=':root[data-accent="'+k+'"]{'+v(p.l)+'}:root[data-accent="'+k+'"][data-theme="dark"]{'+v(p.d)+'}'+
+      '@media (prefers-color-scheme: dark){:root[data-accent="'+k+'"]:not([data-theme="light"]){'+v(p.d)+'}}'+
+      '.tg-'+k+'{background:'+p.l[2]+'!important;color:'+p.l[1]+'!important}'+
+      '@media (prefers-color-scheme: dark){.tg-'+k+'{background:'+p.d[2]+'!important;color:'+p.d[1]+'!important}}';
+  });
+  var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+})();
 
 /* ================= 기기 저장 (미나의 하루와 같은 사이트라 이름표 jm- 을 붙임) ================= */
 function lsGet(k,d){try{var v=localStorage.getItem('jm-'+k);return v==null?d:JSON.parse(v)}catch(e){return d}}
@@ -644,13 +671,23 @@ function partnerUid(){return members().filter(function(u){return u!==me()})[0]||
 function nameOf(u){if(u&&u===me())return '나';return (space&&space.names&&space.names[u])||'상대'}
 function fullName(u){return (space&&space.names&&space.names[u])||(u===me()?myName():'상대')}
 function myName(){if(!user)return '';var n=(user.displayName||'').trim();if(n)return n.split(/\s+/)[0];return (user.email||'').split('@')[0]}
-function byTag(x){return x&&x.by&&user&&x.by!==me()?'<span class="shtag">'+esc(nameOf(x.by))+'</span>':''}
+function byTag(x){return x&&x.by&&user&&x.by!==me()?'<span class="shtag tg-'+colorOf(x.by)+'">'+esc(nameOf(x.by))+'</span>':''}
 function paired(){return members().length>=2&&!!partnerUid()}
+function defColor(u){var m=members();return m.length&&m[0]===u?'tiffany':'navy'}
+function colorOf(u){var c=space&&space.colors&&space.colors[u];if(!c&&u===me())c=lsGet('accent','');return PAL[c]?c:defColor(u)}
+function applyAccent(){var k=spaceId()?colorOf(me()):(lsGet('accent','')||'navy');if(!PAL[k])k='navy';if(document.documentElement.dataset.accent!==k){document.documentElement.dataset.accent=k}}
+function setColor(k){
+  if(!PAL[k])return;lsSet('accent',k);
+  if(space){space.colors=Object.assign({},space.colors||{});space.colors[me()]=k;save()}
+  if(fsdb&&user&&spaceId()){var u={};u['colors.'+user.uid]=k;fsdb.collection('spaces').doc(spaceId()).update(u).catch(function(){})}
+  render();drawSheetKeep();
+}
 
 /* ================= 렌더 ================= */
 var view=document.getElementById('view');
 function render(){
   var gate=!appReady();
+  applyAccent();
   document.body.classList.toggle('gated',gate);
   document.querySelectorAll('[data-go]').forEach(function(b){if(b.dataset.go===V.tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
   var act=document.activeElement,aid=act&&act.id&&view.contains(act)?act.id:null,sel=aid&&act.selectionStart!=null?[act.selectionStart,act.selectionEnd]:null,aval=aid?act.value:null;
@@ -664,29 +701,30 @@ function appReady(){return !!spaceId()&&(!!user||!authKnown)}
 function gateV(){
   var hero='<div class="hero">'+MASCOT+'<h1>Jeremina</h1><p>우리 둘의 일정·할 일·살 것·루틴·지출을<br>한곳에서 같이 봐요.</p></div>';
   if(!authKnown)return '<div class="gate">'+hero+'<div class="card"><span class="fine" style="text-align:center">'+(loadFailed?'연결 기능을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 열어주세요.':'불러오는 중이에요…')+'</span></div></div>';
-  var s1,s2;
+  var s1,s2,inv=pendingJoin?'<div class="invite">초대 링크로 오셨어요. 로그인만 하면 바로 연결돼요.</div>':'';
   if(!user){
     s1='<div class="card"><div class="step"><i>1</i><b>로그인</b></div><p class="fine">Google 계정으로 로그인해요. 미나의 하루와 같은 계정이면 더 편해요.</p>'+
       '<button type="button" class="btn pink" data-act="login-google">Google로 로그인</button>'+
       (emailOpen?'<div class="field"><label for="g-email">이메일</label><input class="inp" type="email" id="g-email" autocomplete="email" inputmode="email"></div><div class="field"><label for="g-pw">비밀번호 (6자 이상)</label><input class="inp" type="password" id="g-pw" autocomplete="current-password"></div><div class="actions"><button type="button" class="btn ghost" data-act="email-signup">처음이에요</button><button type="button" class="btn" data-act="email-login">로그인</button></div>':'<button type="button" class="textlink" data-act="toggle-email">구글 로그인이 안 되면 이메일로 로그인</button>')+'</div>';
-    s2='<div class="card" style="opacity:.55"><div class="step"><i>2</i><b>연결 코드 넣기</b></div></div>';
+    s2=pendingJoin?'':'<div class="card" style="opacity:.55"><div class="step"><i>2</i><b>연결하기</b></div><p class="fine">상대에게 받은 초대 링크를 누르면 자동으로 연결돼요.</p></div>';
   } else {
     s1='<div class="card"><div class="step done"><i>✓</i><b>로그인</b><span>'+esc(user.email||myName())+'</span></div><button type="button" class="textlink" data-act="logout" style="align-self:flex-start;padding:0">다른 계정으로</button></div>';
-    s2=!metaKnown?'<div class="card"><div class="step"><i>2</i><b>연결 확인 중…</b></div></div>':
-      '<div class="card"><div class="step"><i>2</i><b>연결 코드 넣기</b></div><p class="fine">미나의 하루 → 설정 → 남편과 공유에 있는 8자리 코드예요.</p>'+
-      '<label for="g-code" class="sr">연결 코드</label><input class="codein" id="g-code" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD2345">'+
+    s2=!metaKnown||joining?'<div class="card"><div class="step"><i>2</i><b>'+(joining?'연결하는 중…':'연결 확인 중…')+'</b></div></div>':
+      '<div class="card"><div class="step"><i>2</i><b>연결하기</b></div><p class="fine">상대에게 받은 초대 링크를 이 폰에서 누르면 자동으로 연결돼요. 링크 대신 8자리 코드를 넣어도 돼요.</p>'+
+      '<label for="g-code" class="sr">연결 코드</label><input class="codein" id="g-code" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD2345" value="'+esc(lastCode)+'">'+
       '<button type="button" class="btn pink" data-act="sp-join">연결하기</button></div>'+
       '<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><span class="fine">코드가 없나요?</span><button type="button" class="textlink" data-act="sp-create" style="color:var(--accent-ink);font-weight:600;text-decoration:none;font-size:15px">여기서 새 공유 공간 만들기</button></div>';
   }
-  return '<div class="gate">'+hero+s1+s2+'<p class="fine" style="text-align:center">Jeremina에 넣는 건 전부 둘이 같이 봐요.</p></div>';
+  return '<div class="gate">'+hero+inv+s1+s2+'<p class="fine" style="text-align:center">Jeremina에 넣는 건 전부 둘이 같이 봐요.</p></div>';
 }
 
 /* ---------- 홈 ---------- */
 function homeV(){
   var greet=NOW.h<11?'좋은 아침이에요':(NOW.h<17?'좋은 오후예요':'좋은 저녁이에요');
   var p=parse(TODAY),pu=partnerUid();
-  var pill=paired()?'<span class="couple"><i></i><i></i>'+esc(josa(fullName(pu),'과','와'))+' 연결됨</span>':'<span class="couple wait"><i></i><i></i>연결 기다리는 중</span>';
-  var wait=!paired()?'<div class="notice"><span>아직 상대가 연결되지 않았어요. 코드 <b class="num" style="font-family:var(--fm);letter-spacing:.08em">'+esc(spaceId())+'</b>를 보내주세요.</span><button data-act="sp-copy">복사</button></div>':'';
+  var dots='<i style="background:'+PAL[colorOf(me())].l[0]+'"></i><i style="background:'+(paired()?PAL[colorOf(pu)].l[0]:'var(--ring)')+'"></i>';
+  var pill=paired()?'<span class="couple">'+dots+esc(josa(fullName(pu),'과','와'))+' 연결됨</span>':'<span class="couple wait">'+dots+'연결 기다리는 중</span>';
+  var wait=!paired()?'<div class="notice"><span>아직 상대가 연결되지 않았어요. 초대 링크를 보내면 상대는 누르고 로그인만 하면 돼요.</span><button data-act="sp-copy">링크 복사</button></div>':'';
   var hols=holidaysOn(TODAY),evs=eventsOn(TODAY);
   var todayRows=hols.map(holRow).join('');
   evs.forEach(function(e){todayRows+='<div class="ev"><span class="dot '+colorCls(e.color)+'"></span><span class="t num">'+(e.time||'종일')+'</span><span class="n">'+esc(e.title)+byTag(e)+'</span></div>'});
@@ -706,7 +744,7 @@ function homeV(){
     return '<button class="ev tap" data-edit-event="'+u.e.id+'"><span class="dot '+colorCls(u.e.color)+'"></span><span class="t wide num">'+lab+'</span><span class="n">'+esc(u.e.title)+byTag(u.e)+'</span><span class="note num">'+(u.e.time||'종일')+'</span></button>';
   }).join('')||'<div class="empty">앞으로 한 달 동안 일정이 없어요</div>';
   return wait+
-  '<div class="head-row"><div class="head"><span class="h-sub">'+greet+(user?', '+esc(fullName(me()))+'님':'')+'</span><span class="h-big num">'+p.m+'월 '+p.d+'일 '+WD[dow(p.y,p.m,p.d)]+'요일</span><span>'+pill+'</span></div><button class="iconbtn" data-act="settings" aria-label="설정">'+ICON_GEAR+'</button></div>'+
+  '<div class="head-row"><div class="head"><span class="h-sub">'+greet+(user?', '+esc(fullName(me()))+'님':'')+'</span><span class="h-big num">'+p.m+'월 '+p.d+'일 '+WD[dow(p.y,p.m,p.d)]+'요일</span><span>'+pill+'</span></div><span class="hbtns"><button class="iconbtn" data-act="pick-color" aria-label="하이라이트 색 고르기"><span class="cdot"></span></button><button class="iconbtn" data-act="settings" aria-label="설정">'+ICON_GEAR+'</button></span></div>'+
   '<div class="home-grid"><div class="home-col">'+
     (paired()?'<button class="card tap" data-go="money" style="padding:14px 16px">'+balCard()+'</button>':'')+
     '<button class="card tap" data-go="cal"><span class="card-title" style="width:100%"><b>오늘 일정</b><span class="link num">'+(evs.length+hols.length)+'개 ›</span></span>'+todayRows+'</button>'+
@@ -1124,8 +1162,14 @@ function drawSheet(){
     h='<h2>살 것 카테고리</h2><p class="fine">이름을 바꾸면 그 카테고리에 있던 살 것도 같이 옮겨져요. 미나의 하루 카테고리도 똑같이 바뀌어요.</p>'+
     '<div class="items">'+(d.items||[]).map(function(it,i){return '<div class="irow"><span class="bul"></span><label for="it-'+i+'" class="sr">카테고리 '+(i+1)+'</label><input class="inp" id="it-'+i+'" data-item="'+i+'" value="'+esc(it.t)+'" placeholder="카테고리 이름" autocomplete="off"><button type="button" class="iconbtn" data-act="item-del" data-i="'+i+'" aria-label="카테고리 삭제">×</button></div>'}).join('')+'<button type="button" class="textlink" data-act="item-add">+ 카테고리 추가</button></div>'+
     '<p class="fine">지운 카테고리에 있던 살 것은 목록 아래쪽에 그대로 남아 있어요.</p>'+footer(false,true);
+  } else if(k==='color'){
+    var mine=colorOf(me()),pc=paired()?colorOf(partnerUid()):'';
+    h='<h2>하이라이트 색</h2><p class="fine">내 폰에서 Jeremina 버튼·탭·체크 색이 바뀌어요. 계정에 저장돼서 다른 기기에서도 같아요. 내가 넣은 항목의 이름표도 상대 폰에서 이 색으로 보여요.</p>'+
+    '<div class="swgrid">'+Object.keys(PAL).map(function(c){return '<button type="button" class="swb" data-act="set-color" data-k="'+c+'" aria-pressed="'+(c===mine)+'"><i style="background:'+PAL[c].l[0]+'"></i>'+PAL[c].n+(c===pc?'<small>'+esc(fullName(partnerUid()))+' 색</small>':'')+'</button>'}).join('')+'</div>'+
+    '<p class="fine">미나의 하루의 핫핑크와 헷갈리지 않게 핑크는 뺐어요.</p><button type="button" class="btn ghost" data-act="sheet-close">닫기</button>';
   } else if(k==='settings'){
     h='<h2>설정</h2>'+accountH()+spaceH()+
+    (spaceId()?'<button type="button" class="sync" data-act="pick-color" style="flex-direction:row;align-items:center;width:100%"><b style="flex:1">하이라이트 색</b><span class="fine">'+PAL[colorOf(me())].n+'</span><span class="cdot"></span></button>':'')+
     '<div class="sync"><b>공휴일 표시</b><div class="chips"><button type="button" class="chip soft" data-act="hol-kr" aria-pressed="'+!!HOLSET.kr+'">한국 공휴일</button><button type="button" class="chip soft" data-act="hol-jp" aria-pressed="'+!!HOLSET.jp+'">일본 공휴일</button></div><span class="fine">이 기기에서만 바뀌어요.</span></div>'+
     '<p class="fine">Jeremina · 버전 '+APPV+' · '+BUILT+'</p>';
   }
@@ -1139,7 +1183,7 @@ function accountH(){
 function spaceH(){
   if(!spaceId())return '';
   var others=members().filter(function(u){return u!==me()});
-  if(!others.length)return '<div class="sync"><b>공유 공간 · 연결 기다리는 중</b><span class="fine">상대가 이 코드를 넣으면 연결돼요. 미나의 하루는 설정 → 남편과 공유, Jeremina는 첫 화면에서 넣으면 돼요.</span><div class="codebox">'+esc(spaceId())+'</div><span class="urlline">'+APP_URL+'</span><button type="button" class="btn" data-act="sp-copy">주소와 코드 복사</button><button type="button" class="textlink" data-act="sp-leave">'+(spArmed?'한 번 더 누르면 연결을 끊어요':'공유 공간 나가기')+'</button></div>';
+  if(!others.length)return '<div class="sync"><b>공유 공간 · 연결 기다리는 중</b><span class="fine">아래 초대 링크를 보내면, 상대는 누르고 로그인만 하면 연결돼요. (미나의 하루에서는 설정 → 남편과 공유에 코드를 넣어도 돼요)</span><div class="codebox">'+esc(spaceId())+'</div><span class="urlline">'+esc(inviteLink())+'</span><button type="button" class="btn" data-act="sp-copy">초대 링크 보내기</button><button type="button" class="textlink" data-act="sp-leave">'+(spArmed?'한 번 더 누르면 연결을 끊어요':'공유 공간 나가기')+'</button></div>';
   return '<div class="sync"><b>공유 공간 · 연결됨</b><div class="whom"><span>'+esc(josa(fullName(others[0]),'과','와'))+' 연결되어 있어요<br><span class="st on"><i></i>코드 '+esc(spaceId())+'</span></span></div><span class="fine">여기에 넣는 일정·할 일·살 것·루틴은 미나의 하루의 "남편과 공유" 항목과 같은 곳에 저장돼요. 지출은 Jeremina에서만 보여요.</span><button type="button" class="textlink" data-act="sp-leave">'+(spArmed?'한 번 더 누르면 연결을 끊어요':'연결 끊기')+'</button></div>';
 }
 function setField(name,v){
@@ -1203,6 +1247,8 @@ sheet.addEventListener('click',function(e){
   if(t==='sp-copy')copyInvite();
   if(t==='sp-leave'){if(!spArmed){spArmed=true;drawSheetKeep();return}spArmed=false;leaveSpace()}
   if(t==='logout')logout();
+  if(t==='set-color'){setColor(a.dataset.k);return}
+  if(t==='pick-color'){openSheet('color',{});return}
   if(t==='sheet-del'){if(!armed){armed=true;drawSheetKeep();return}var col={event:'events',todo:'todos',buy:'buys',routine:'routines',expense:'expenses',settle:'expenses'}[form.kind];del(col,form.d.id);closeSheet();toast('삭제했어요')}
 });
 function drawSheetKeep(){if(!form)return;var st=sheet.querySelector('.sheet'),sc=st?st.scrollTop:0,ae=document.activeElement,aid=ae&&ae.id&&sheet.contains(ae)?ae.id:null,sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;drawSheet();var n=sheet.querySelector('.sheet');if(n)n.scrollTop=sc;if(aid){var el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1])}catch(_){}}}}
@@ -1267,6 +1313,7 @@ document.addEventListener('click',function(e){
   if(a==='q-buy')quickBuy();
   if(a==='edit-cats')openSheet('cats',{items:cats().map(function(c){return {t:c,o:c}})});
   if(a==='settings')openSheet('settings',{});
+  if(a==='pick-color')openSheet('color',{});
   if(a==='sp-copy')copyInvite();
   if(a==='login-google')signInGoogle();
   if(a==='toggle-email'){emailOpen=!emailOpen;render()}
@@ -1293,9 +1340,10 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= 버전 ================= */
-var APPV='1';
-var BUILT='2026년 11월 2일 오후 7:30';
+var APPV='2';
+var BUILT='2026년 11월 2일 오후 7:40';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
+function inviteLink(){return APP_URL+'?join='+spaceId()}
 
 /* ================= Firebase: 로그인 · 공유 공간 ================= */
 var FB_CFG={apiKey:"AIzaSyAwfPPifX8fSEchVdmHurDzrc8k0XfknsQ",authDomain:"mina-day.firebaseapp.com",projectId:"mina-day",storageBucket:"mina-day.firebasestorage.app",messagingSenderId:"1059378371779",appId:"1:1059378371779:web:6294dabb4cf9a507829676"};
@@ -1332,8 +1380,8 @@ function loadSpace(){
   metaUnsub=fsdb.collection('users').doc(user.uid).collection('meta').doc('space').onSnapshot(function(d){
     var sid=d.exists?(d.data().sid||''):'';
     if(sid&&space&&space.id===sid&&spUnsubs.length)return;
-    if(!sid){if(!d.metadata.fromCache){metaKnown=true;spUnsubs.forEach(function(f){try{f()}catch(e){}});spUnsubs=[];clearAll();redraw()}return}
-    metaKnown=true;
+    if(!sid){if(!d.metadata.fromCache){metaKnown=true;spUnsubs.forEach(function(f){try{f()}catch(e){}});spUnsubs=[];clearAll();redraw();tryInvite()}return}
+    metaKnown=true;if(pendingJoin){if(pendingJoin!==sid)toast('이미 다른 공유 공간에 연결되어 있어요');pendingJoin='';lsSet('join','')}
     spUnsubs.forEach(function(f){try{f()}catch(e){}});spUnsubs=[];
     watchSpace(sid);
   },function(){syncState='error';metaKnown=true;redraw()});
@@ -1380,7 +1428,7 @@ function joinSpace(code){
     var m=d.data().members||[];
     if(m.indexOf(user.uid)<0){if(m.length>=2)throw {code:'full'};var u={members:firebase.firestore.FieldValue.arrayUnion(user.uid)};u['names.'+user.uid]=myName()||'나';return ref.update(u)}
   }).then(function(){return fsdb.collection('users').doc(user.uid).collection('meta').doc('space').set({sid:code})})
-    .then(function(){toast('연결됐어요!')}).catch(spErr);
+    .then(function(){joining=false;toast('연결됐어요!')}).catch(function(e){joining=false;render();spErr(e)});
 }
 function leaveSpace(){
   var sid=spaceId();if(!sid||!user)return;
@@ -1389,9 +1437,24 @@ function leaveSpace(){
     .then(function(){stopSpace();clearAll();closeSheet();loadSpace();toast('연결을 끊었어요');render()});
 }
 function copyInvite(){
-  var txt='Jeremina 앱: '+APP_URL+'\n로그인 후 연결 코드: '+spaceId()+'\n(미나의 하루에서는 설정 → 남편과 공유에 코드를 넣으면 돼요)';
-  try{navigator.clipboard.writeText(txt).then(function(){toast('복사했어요. 상대에게 보내주세요')},function(){toast('복사가 안 돼요. 코드를 직접 보내주세요: '+spaceId())})}catch(e){toast('코드: '+spaceId())}
+  var txt='Jeremina 초대 링크예요. 누르고 Google로 로그인하면 바로 연결돼요.\n'+inviteLink();
+  function fb(){toast('복사가 안 돼요. 코드를 직접 보내주세요: '+spaceId())}
+  try{if(navigator.share&&window.matchMedia('(pointer:coarse)').matches){navigator.share({title:'Jeremina 초대',text:txt}).catch(function(){});return}
+    navigator.clipboard.writeText(txt).then(function(){toast('초대 링크를 복사했어요. 상대에게 보내주세요')},fb)}catch(e){fb()}
 }
+/* 초대 링크(?join=코드)로 열면 로그인 후 자동 연결 */
+var pendingJoin='',lastCode='';
+function readInvite(){
+  try{var q=new URLSearchParams(location.search).get('join');if(q){q=q.toUpperCase().replace(/[^A-Z0-9]/g,'');if(q.length===8)lsSet('join',q);history.replaceState(null,'',location.pathname)}}catch(e){}
+  pendingJoin=lsGet('join','')||'';
+}
+function tryInvite(){
+  if(!pendingJoin||!user)return;
+  var code=pendingJoin;pendingJoin='';lsSet('join','');lastCode=code;
+  if(spaceId()){if(spaceId()!==code)toast('이미 다른 공유 공간에 연결되어 있어요');return}
+  joining=true;render();joinSpace(code);
+}
+var joining=false;
 function initCloud(){
   if(!window.firebase||!firebase.auth||!firebase.firestore){loadFailed=true;render();return}
   try{
@@ -1403,7 +1466,7 @@ function initCloud(){
     firebase.auth().onAuthStateChanged(function(u){
       var was=user;user=u||null;authKnown=true;
       stopSpace();
-      if(user){if(!was&&!cachedSid)toast('로그인했어요');emailOpen=false;syncState='loading';metaKnown=false;loadSpace()}
+      if(user){if(!was&&!cachedSid&&!pendingJoin)toast('로그인했어요');emailOpen=false;syncState='loading';metaKnown=false;loadSpace()}
       else{syncState='off';metaKnown=false;clearAll()}
       redraw();
     });
@@ -1432,6 +1495,7 @@ function checkUpdate(){
 
 /* ================= 시작 ================= */
 (function boot(){
+  readInvite();
   var C=lsGet('cache',null);
   if(C&&C.sid){cachedSid=C.sid;cachedUid=C.uid||'';if(C.space)space=C.space;SHC.forEach(function(c){S[c]=Array.isArray(C[c])?C[c]:[]})}
   render();
