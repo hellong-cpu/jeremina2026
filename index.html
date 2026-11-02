@@ -1213,8 +1213,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='7';
-var BUILT='Nov 2, 2026 9:30 PM';
+var APPV='8';
+var BUILT='Nov 2, 2026 10:25 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
@@ -1249,7 +1249,9 @@ function clearAll(){SHC.forEach(function(c){S[c]=[]});space=null;cachedSid='';ca
 function stopSpace(){spUnsubs.forEach(function(f){try{f()}catch(e){}});spUnsubs=[];if(metaUnsub){try{metaUnsub()}catch(e){}metaUnsub=null}}
 function redraw(){render();if(form&&(form.kind==='settings'||form.kind==='profile'||form.kind==='day'))drawSheetKeep()}
 function loadSpace(){
-  metaUnsub=fsdb.collection('users').doc(user.uid).collection('meta').doc('space').onSnapshot(function(d){
+  var metaRef=fsdb.collection('users').doc(user.uid).collection('meta').doc('space'),me0=user;
+  setTimeout(function(){if(user!==me0||metaKnown)return;metaRef.get({source:'server'}).then(function(d){if(user!==me0||metaKnown)return;if(!d.exists||!d.data().sid){metaKnown=true;clearAll();redraw();tryInvite()}}).catch(function(e){if(user!==me0||metaKnown)return;metaKnown=true;redraw();toast("Couldn't reach the server ("+((e&&e.code)||'offline')+')')})},6000);
+  metaUnsub=metaRef.onSnapshot({includeMetadataChanges:true},function(d){
     var sid=d.exists?(d.data().sid||''):'';
     if(sid&&space&&space.id===sid&&spUnsubs.length)return;
     if(!sid){if(!d.metadata.fromCache){metaKnown=true;spUnsubs.forEach(function(f){try{f()}catch(e){}});spUnsubs=[];clearAll();redraw();tryInvite()}return}
@@ -1261,7 +1263,7 @@ function loadSpace(){
 function watchSpace(sid){
   cachedSid=sid;
   var started=false;
-  spUnsubs.push(fsdb.collection('spaces').doc(sid).onSnapshot(function(d){
+  spUnsubs.push(fsdb.collection('spaces').doc(sid).onSnapshot({includeMetadataChanges:true},function(d){
     if(!d.exists&&d.metadata.fromCache)return;
     if(!d.exists||(d.data().members||[]).indexOf(user.uid)<0){spUnsubs.forEach(function(f){try{f()}catch(e){}});spUnsubs=[];clearAll();redraw();return}
     space=Object.assign({id:sid},d.data());
