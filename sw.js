@@ -1,6 +1,6 @@
 /* Jeremina service worker: 화면 파일과 폰트·SDK만 캐시. 데이터(Firestore, 로그인, 환율) 요청은 그대로 통과. */
-const CACHE = 'jeremina-v3';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png?v=1', './apple-touch-icon.png?v=1'];
+const CACHE = 'jeremina-v4';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png?v=2', './apple-touch-icon.png?v=2'];
 const STATIC_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'www.gstatic.com', 'cdn.jsdelivr.net'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).catch(() => {}).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('jeremina-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

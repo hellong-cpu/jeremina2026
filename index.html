@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F6F4F5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#100E0F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F7F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1313" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Jeremina">
 <meta name="description" content="우리 둘의 일정·할 일·살 것·루틴·지출을 한곳에서">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png?v=1" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=1">
+<link rel="icon" href="icon-192.png?v=2" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <title>Jeremina</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,42 +26,42 @@ html,body{overscroll-behavior-y:none}
 /* 미나의 하루와 같은 바탕: 종이색 배경, 얇은 선의 흰 카드, 핫핑크 포인트 하나.
    폰 = 한 줄 + 떠 있는 탭바, 960px 이상 = 왼쪽 메뉴 + 넓은 화면 */
 :root{
-  --bg:#F6F4F5; --card:#FFFFFF; --sunken:#EFECEE; --soft:#FAF8F9; --line:#E8E3E6; --line2:#D9D2D6;
-  --fg:#1A1418; --fg2:#5A5157; --fg3:#7B7178; --fg4:#A69CA2; --ring:#C9C0C5;
-  --accent:#1F3A93; --accent-ink:#1F3A93; --accent-weak:#E6EBF8; --on-accent:#FFFFFF;
-  --peach:#FFB27A; --peach-weak:#FFF0E4;
+  --bg:#F2F7F7; --card:#FFFFFF; --sunken:#E6EFEF; --soft:#F7FBFB; --line:#DDE8E8; --line2:#C9D9D8;
+  --fg:#122120; --fg2:#465A59; --fg3:#647877; --fg4:#93A6A5; --ring:#B4C7C6;
+  --accent:#0ABAB5; --accent-ink:#087A76; --accent-weak:#DDF5F4; --on-accent:#062F2D;
+  --peach:#FF8A7A; --peach-weak:#FFECE8; --peach-ink:#B03F33;
   --red:#C2362B; --red-weak:#FBEAE7; --sat:#2B5FB8;
   --violet:#6B3FC4; --violet-weak:#F0EAFB; --violet-dot:#8B63E0;
   --green:#1E6B57; --green-weak:#E2EFE9; --green-dot:#2E9A7C;
   --orange:#9A4A0B; --orange-weak:#FBEFE3; --orange-dot:#E07B2A;
   --blue:#2B5FB8; --blue-weak:#E7EEFA; --blue-dot:#3A73D6;
-  --star:#D99A1E; --scrim:rgba(14,18,16,.42); --glass:rgba(255,255,255,.86);
+  --star:#E0A21B; --scrim:rgba(8,30,29,.42); --glass:rgba(255,255,255,.88);
   --ff:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
   --fm:'IBM Plex Mono',ui-monospace,'SFMono-Regular',monospace;
   --r:18px; --r-ctl:12px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#100E0F; --card:#1A1719; --sunken:#242023; --soft:#1D1A1C; --line:#2E292C; --line2:#3B3539;
-  --fg:#EEF1EE; --fg2:#B2B9B4; --fg3:#949B96; --fg4:#6E7570; --ring:#4A514C;
-  --accent:#4E6FD8; --accent-ink:#A9BFF5; --accent-weak:#1B2546; --on-accent:#FFFFFF;
-  --peach:#F0904A; --peach-weak:#382616;
+  --bg:#0B1313; --card:#131F1F; --sunken:#1B2928; --soft:#162322; --line:#233332; --line2:#2F4241;
+  --fg:#E6F2F1; --fg2:#A6BCBA; --fg3:#869C9A; --fg4:#617574; --ring:#3E5352;
+  --accent:#0ABAB5; --accent-ink:#5ED8D3; --accent-weak:#0F3331; --on-accent:#062F2D;
+  --peach:#FF9C8E; --peach-weak:#3A1E1A; --peach-ink:#FFB3A8;
   --red:#FF7A6E; --red-weak:#3A1D1A; --sat:#82A8F0;
   --violet:#C3A6FF; --violet-weak:#2A2340; --violet-dot:#A786F5;
   --green:#86D6BC; --green-weak:#16302A; --green-dot:#4FBF9C;
   --orange:#FFB27A; --orange-weak:#382616; --orange-dot:#F0904A;
   --blue:#9CBBF5; --blue-weak:#1B2742; --blue-dot:#6C98EC;
-  --star:#F0BE55; --scrim:rgba(0,0,0,.6); --glass:rgba(22,25,23,.86); color-scheme:dark}}
+  --star:#F0BE55; --scrim:rgba(0,0,0,.6); --glass:rgba(19,31,31,.88); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#100E0F; --card:#1A1719; --sunken:#242023; --soft:#1D1A1C; --line:#2E292C; --line2:#3B3539;
-  --fg:#EEF1EE; --fg2:#B2B9B4; --fg3:#949B96; --fg4:#6E7570; --ring:#4A514C;
-  --accent:#4E6FD8; --accent-ink:#A9BFF5; --accent-weak:#1B2546; --on-accent:#FFFFFF;
-  --peach:#F0904A; --peach-weak:#382616;
+  --bg:#0B1313; --card:#131F1F; --sunken:#1B2928; --soft:#162322; --line:#233332; --line2:#2F4241;
+  --fg:#E6F2F1; --fg2:#A6BCBA; --fg3:#869C9A; --fg4:#617574; --ring:#3E5352;
+  --accent:#0ABAB5; --accent-ink:#5ED8D3; --accent-weak:#0F3331; --on-accent:#062F2D;
+  --peach:#FF9C8E; --peach-weak:#3A1E1A; --peach-ink:#FFB3A8;
   --red:#FF7A6E; --red-weak:#3A1D1A; --sat:#82A8F0;
   --violet:#C3A6FF; --violet-weak:#2A2340; --violet-dot:#A786F5;
   --green:#86D6BC; --green-weak:#16302A; --green-dot:#4FBF9C;
   --orange:#FFB27A; --orange-weak:#382616; --orange-dot:#F0904A;
   --blue:#9CBBF5; --blue-weak:#1B2742; --blue-dot:#6C98EC;
-  --star:#F0BE55; --scrim:rgba(0,0,0,.6); --glass:rgba(22,25,23,.86); color-scheme:dark}
+  --star:#F0BE55; --scrim:rgba(0,0,0,.6); --glass:rgba(19,31,31,.88); color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -348,7 +348,7 @@ i.tm{font-style:normal}
 .ev .check{width:20px;height:20px;border-radius:6px;flex-shrink:0;margin-right:24px}
 .ev .check svg{width:12px;height:12px}
 .ev.done .n{color:var(--fg4);text-decoration:line-through}
-.shtag{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:6px;background:var(--peach-weak);color:var(--orange);margin-left:6px;vertical-align:2px;letter-spacing:0;text-decoration:none}
+.shtag{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:6px;background:var(--peach-weak);color:var(--peach-ink);margin-left:6px;vertical-align:2px;letter-spacing:0;text-decoration:none}
 .txtw{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
 .txtw .txt{flex:none}
 .item .txt small.bnote{display:flex;gap:6px}
@@ -397,7 +397,7 @@ i.tm{font-style:normal}
 
 <div class="app">
   <aside class="side" aria-label="메뉴">
-    <div class="brand"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="23" fill="#FFE6EF"/><path d="M50 24C46 21 42 22 42 26C42 29 46 31 50 34C54 31 58 29 58 26C58 22 54 21 50 24Z" fill="#F2357E"/><circle cx="35" cy="60" r="20" fill="#FFB27A"/><circle cx="64" cy="60" r="20" fill="#F2357E"/><circle cx="29" cy="57" r="2.6" fill="#1A1418"/><circle cx="40" cy="57" r="2.6" fill="#1A1418"/><circle cx="59" cy="57" r="2.6" fill="#fff"/><circle cx="70" cy="57" r="2.6" fill="#fff"/></svg>Jeremina</div>
+    <div class="brand"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="23" fill="#DDF5F4"/><path d="M50 24C46 21 42 22 42 26C42 29 46 31 50 34C54 31 58 29 58 26C58 22 54 21 50 24Z" fill="#FF8A7A"/><circle cx="35" cy="60" r="20" fill="#8FE0DC"/><circle cx="64" cy="60" r="20" fill="#0ABAB5"/><circle cx="29" cy="57" r="2.6" fill="#062F2D"/><circle cx="40" cy="57" r="2.6" fill="#062F2D"/><circle cx="59" cy="57" r="2.6" fill="#062F2D"/><circle cx="70" cy="57" r="2.6" fill="#062F2D"/></svg>Jeremina</div>
     <button class="nav" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5L12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg>홈</button>
     <button class="nav" data-go="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>캘린더</button>
     <button class="nav" data-go="list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5l1.8 1.8L9 5M4 14.5l1.8 1.8L9 13M12.5 7h7.5M12.5 15h7.5"/></svg>할 일 · 살 것 · 루틴</button>
@@ -562,7 +562,7 @@ var ICON_L='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="
 var ICON_R='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
 var ICON_GEAR='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 var ICON_SWAP='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>';
-var MASCOT='<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="23" fill="#FFE6EF"/><path d="M50 24C46 21 42 22 42 26C42 29 46 31 50 34C54 31 58 29 58 26C58 22 54 21 50 24Z" fill="#F2357E"/><circle cx="35" cy="60" r="20" fill="#FFB27A"/><circle cx="64" cy="60" r="20" fill="#F2357E"/><circle cx="29" cy="57" r="2.4" fill="#1A1418"/><circle cx="40" cy="57" r="2.4" fill="#1A1418"/><path d="M31 64Q34.5 67 38 64" stroke="#1A1418" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="59" cy="57" r="2.4" fill="#fff"/><circle cx="70" cy="57" r="2.4" fill="#fff"/><path d="M61 64Q64.5 67 68 64" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+var MASCOT='<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="23" fill="#DDF5F4"/><path d="M50 24C46 21 42 22 42 26C42 29 46 31 50 34C54 31 58 29 58 26C58 22 54 21 50 24Z" fill="#FF8A7A"/><circle cx="35" cy="60" r="20" fill="#8FE0DC"/><circle cx="64" cy="60" r="20" fill="#0ABAB5"/><circle cx="29" cy="57" r="2.4" fill="#062F2D"/><circle cx="40" cy="57" r="2.4" fill="#062F2D"/><path d="M31 64Q34.5 67 38 64" stroke="#062F2D" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="59" cy="57" r="2.4" fill="#062F2D"/><circle cx="70" cy="57" r="2.4" fill="#062F2D"/><path d="M61 64Q64.5 67 68 64" stroke="#062F2D" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
 
 /* ================= 반복 일정 (미나의 하루와 같은 코드) ================= */
 function evRule(e){
@@ -671,11 +671,11 @@ function partnerUid(){return members().filter(function(u){return u!==me()})[0]||
 function nameOf(u){if(u&&u===me())return '나';return (space&&space.names&&space.names[u])||'상대'}
 function fullName(u){return (space&&space.names&&space.names[u])||(u===me()?myName():'상대')}
 function myName(){if(!user)return '';var n=(user.displayName||'').trim();if(n)return n.split(/\s+/)[0];return (user.email||'').split('@')[0]}
-function byTag(x){return x&&x.by&&user&&x.by!==me()?'<span class="shtag tg-'+colorOf(x.by)+'">'+esc(nameOf(x.by))+'</span>':''}
+function byTag(x){return x&&x.by&&user&&x.by!==me()?'<span class="shtag'+(colorOf(x.by)!==colorOf(me())?' tg-'+colorOf(x.by):'')+'">'+esc(nameOf(x.by))+'</span>':''}
 function paired(){return members().length>=2&&!!partnerUid()}
-function defColor(u){var m=members();return m.length&&m[0]===u?'tiffany':'navy'}
+function defColor(u){return 'tiffany'}
 function colorOf(u){var c=space&&space.colors&&space.colors[u];if(!c&&u===me())c=lsGet('accent','');return PAL[c]?c:defColor(u)}
-function applyAccent(){var k=spaceId()?colorOf(me()):(lsGet('accent','')||'navy');if(!PAL[k])k='navy';if(document.documentElement.dataset.accent!==k){document.documentElement.dataset.accent=k}}
+function applyAccent(){var k=spaceId()?colorOf(me()):(lsGet('accent','')||'tiffany');if(!PAL[k])k='tiffany';if(document.documentElement.dataset.accent!==k){document.documentElement.dataset.accent=k}}
 function setColor(k){
   if(!PAL[k])return;lsSet('accent',k);
   if(space){space.colors=Object.assign({},space.colors||{});space.colors[me()]=k;save()}
@@ -1340,8 +1340,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= 버전 ================= */
-var APPV='3';
-var BUILT='2026년 11월 2일 오후 7:25';
+var APPV='4';
+var BUILT='2026년 11월 2일 오후 7:40';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
