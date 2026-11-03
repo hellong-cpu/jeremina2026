@@ -11,8 +11,8 @@
 <meta name="apple-mobile-web-app-title" content="Jeremina">
 <meta name="description" content="Mina & Jeremy's shared calendar, expenses and to-dos">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png?v=3" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
+<link rel="icon" href="icon-192.png?v=4" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=4">
 <title>Jeremina</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -392,7 +392,7 @@ select.inp{font-weight:500;appearance:auto}
 
 <div class="app">
   <aside class="side" aria-label="Menu">
-    <div class="brand"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="23" fill="#DDF5F4"/><path d="M50 24C46 21 42 22 42 26C42 29 46 31 50 34C54 31 58 29 58 26C58 22 54 21 50 24Z" fill="#F26B5B"/><circle cx="35" cy="60" r="20" fill="#0ABAB5"/><circle cx="64" cy="60" r="20" fill="#F26B5B"/><circle cx="29" cy="57" r="2.6" fill="#062F2D"/><circle cx="40" cy="57" r="2.6" fill="#062F2D"/><circle cx="59" cy="57" r="2.6" fill="#fff"/><circle cx="70" cy="57" r="2.6" fill="#fff"/></svg>Jeremina</div>
+    <div class="brand"><svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="23" fill="#DDF5F4"/><path d="M50 24C46 21 42 22 42 26C42 29 46 31 50 34C54 31 58 29 58 26C58 22 54 21 50 24Z" fill="#F26B5B"/><circle cx="35" cy="60" r="20" fill="#F26B5B"/><circle cx="64" cy="60" r="20" fill="#0ABAB5"/><circle cx="29" cy="57" r="2.6" fill="#fff"/><circle cx="40" cy="57" r="2.6" fill="#fff"/><circle cx="59" cy="57" r="2.6" fill="#062F2D"/><circle cx="70" cy="57" r="2.6" fill="#062F2D"/></svg>Jeremina</div>
     <button class="nav" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5L12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></svg>Home</button>
     <button class="nav" data-go="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Calendar</button>
     <button class="nav" data-go="money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M15 15h3"/></svg>Expenses</button>
@@ -462,7 +462,7 @@ function lsSet(k,v){try{localStorage.setItem('jm-'+k,JSON.stringify(v))}catch(e)
 /* ================= Person colors (who added what) ================= */
 var PAL={
   tiffany:{n:'Tiffany',l:['#0ABAB5','#087A76','#DDF5F4','#062F2D'],d:['#0ABAB5','#5ED8D3','#0F3331','#062F2D']},
-  coral:{n:'Coral',l:['#F26B5B','#B03F33','#FFECE8','#FFFFFF'],d:['#FF8A7A','#FFB3A8','#3A1E1A','#2A0E0A']},
+  coral:{n:'Salmon',l:['#F26B5B','#B03F33','#FFECE8','#FFFFFF'],d:['#FF8A7A','#FFB3A8','#3A1E1A','#2A0E0A']},
   navy:{n:'Navy',l:['#1F3A93','#1F3A93','#E6EBF8','#FFFFFF'],d:['#4E6FD8','#A9BFF5','#1B2546','#FFFFFF']},
   orange:{n:'Orange',l:['#E8590C','#B8460A','#FFE9DA','#FFFFFF'],d:['#E8590C','#FFA36B','#3A2012','#FFFFFF']},
   green:{n:'Green',l:['#2F7D4F','#246140','#E2F1E8','#FFFFFF'],d:['#3E9E66','#8FD6AE','#15301F','#FFFFFF']},
@@ -508,7 +508,7 @@ function clean(o){var r={};for(var k in o)if(k!=='id'&&k.charAt(0)!=='_'&&o[k]!=
 function dbFail(e){toast(e&&e.code==='permission-denied'?"Couldn't save — no permission. Check the shared space connection.":"Couldn't save. Please try again.")}
 function find(col,id){return S[col].filter(function(x){return x.id===id})[0]}
 function copy(o){return JSON.parse(JSON.stringify(o))}
-function save(){var o={sid:spaceId(),uid:me(),space:space?{id:space.id,members:space.members,names:space.names,nicks:space.nicks,marks:space.marks,colors:space.colors,cats:space.cats,splitDef:space.splitDef}:null};SHC.forEach(function(c){o[c]=S[c]});lsSet('cache',o)}
+function save(){var o={sid:spaceId(),uid:me(),space:space?{id:space.id,members:space.members,names:space.names,nicks:space.nicks,marks:space.marks,pcolors:space.pcolors,cats:space.cats,splitDef2:space.splitDef2}:null};SHC.forEach(function(c){o[c]=S[c]});lsSet('cache',o)}
 
 /* ================= View state ================= */
 var V=lsGet('view',{});
@@ -531,7 +531,7 @@ var ICON_L='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="
 var ICON_R='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
 var ICON_GEAR='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
 var ICON_TRASH='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
-var MASCOT='<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="23" fill="#DDF5F4"/><path d="M50 24C46 21 42 22 42 26C42 29 46 31 50 34C54 31 58 29 58 26C58 22 54 21 50 24Z" fill="#F26B5B"/><circle cx="35" cy="60" r="20" fill="#0ABAB5"/><circle cx="64" cy="60" r="20" fill="#F26B5B"/><circle cx="29" cy="57" r="2.4" fill="#062F2D"/><circle cx="40" cy="57" r="2.4" fill="#062F2D"/><path d="M31 64Q34.5 67 38 64" stroke="#062F2D" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="59" cy="57" r="2.4" fill="#fff"/><circle cx="70" cy="57" r="2.4" fill="#fff"/><path d="M61 64Q64.5 67 68 64" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+var MASCOT='<svg viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="23" fill="#DDF5F4"/><path d="M50 24C46 21 42 22 42 26C42 29 46 31 50 34C54 31 58 29 58 26C58 22 54 21 50 24Z" fill="#F26B5B"/><circle cx="35" cy="60" r="20" fill="#F26B5B"/><circle cx="64" cy="60" r="20" fill="#0ABAB5"/><circle cx="29" cy="57" r="2.4" fill="#fff"/><circle cx="40" cy="57" r="2.4" fill="#fff"/><path d="M31 64Q34.5 67 38 64" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="59" cy="57" r="2.4" fill="#062F2D"/><circle cx="70" cy="57" r="2.4" fill="#062F2D"/><path d="M61 64Q64.5 67 68 64" stroke="#062F2D" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
 function relLabel(n){if(n<=0)return 'Today';if(n===1)return 'Tomorrow';if(n<14)return 'In '+n+' days';if(n<60)return 'In '+Math.round(n/7)+' wk';if(n<365)return 'In '+Math.round(n/30)+' mo';return 'In '+Math.round(n/365)+' yr'}
 
 /* ================= Repeat rules (same engine as 미나의 하루) ================= */
@@ -614,8 +614,10 @@ function myName(){if(!user)return '';var n=(user.displayName||'').trim();if(n)re
 function autoNick(){if(!user)return '';return latinName(user.displayName)||latinName((user.email||'').split('@')[0])||myName()}
 function fullName(u){if(!u)return '';var n=space&&space.nicks&&space.nicks[u];if(n)return n;if(u===me()&&user)return autoNick();var nm=space&&space.names&&space.names[u];return nm||'Partner'}
 function markOf(u){var m=space&&space.marks&&space.marks[u];if(m)return m;return latinInitial(fullName(u))||String(fullName(u)||'?').charAt(0)}
-function defColor(u){var m=members();return m.length&&m[0]===u?'tiffany':'coral'}
-function colorOf(u){var c=space&&space.colors&&space.colors[u];return PAL[c]?c:defColor(u)}
+/* Mina (M) = salmon, Jeremy (J) = teal */
+function jUid(){var P=people(),j=P.filter(function(u){return markOf(u)==='J'})[0];if(j)return j;var m=P.filter(function(u){return markOf(u)==='M'})[0];return m?P.filter(function(u){return u!==m})[0]:P[1]}
+function defColor(u){return u&&u===jUid()?'tiffany':'coral'}
+function colorOf(u){var c=space&&space.pcolors&&space.pcolors[u];return PAL[c]?c:defColor(u)}
 function ptag(u){return '<span class="ptag tg-'+colorOf(u)+'">'+esc(fullName(u))+'</span>'}
 function av(u,cls){return '<span class="av av-'+colorOf(u)+(cls?' '+cls:'')+'" title="'+esc(fullName(u))+'">'+esc(markOf(u))+'</span>'}
 function byTag(x){return x&&x.by?ptag(x.by):''}
@@ -975,7 +977,7 @@ function balance(){
   return v>0?{from:b,to:a,amt:v,paid:nb.paid}:{from:a,to:b,amt:-v,paid:nb.paid};
 }
 function balLine(inline){var bl=balance();if(bl.even)return "You're even 🎉";return esc(fullName(bl.from))+' owes '+esc(fullName(bl.to))+(inline?' <span style="color:var(--accent2-ink)">'+yen(bl.amt)+'</span>':'')}
-function defPct(cat){var P=people(),d=space&&space.splitDef&&space.splitDef[cat];if(d!=null&&isFinite(+d))return +d;return cat==='grocery'?60:50}
+function defPct(cat){var P=people(),d=space&&space.splitDef2&&space.splitDef2[cat];if(d!=null&&isFinite(+d))return +d;return cat==='grocery'?(P[0]===jUid()?60:40):50}
 function pctLabel(x){var P=people(),p=x.pct;if(!p){var j=+x.jpy||0;if(!j)return '';p={};P.forEach(function(u){p[u]=Math.round(shareOf(x,u)/j*100)})}
   var a=+p[P[0]]||0,b=100-a;if(a===100)return fullName(P[0])+' only';if(a===0)return fullName(P[1])+' only';return fullName(P[0])+' '+a+' / '+fullName(P[1])+' '+b}
 function expCalc(d){
@@ -1271,8 +1273,8 @@ sheet.addEventListener('click',function(e){
   if(t==='yearly'){var dd=form.d;if(isYearly(dd)){dd.repeat='none';delete dd.rr}else{dd.repeat='yearly';dd.rr={unit:'year',every:1}}drawSheetKeep();return}
   if(t==='stop-repeat'){form.d.repeat='none';delete form.d.rr;drawSheetKeep();return}
   if(t==='add-on-day'){var dt=a.dataset.d;closeSheet();newFor('event',{date:dt,back:dt});return}
-  if(t==='defpct'){var key=a.dataset.k,nv=Math.max(0,Math.min(100,defPct(key)+(+a.dataset.v)));spaceSet('splitDef.'+key,nv);drawSheetKeep();return}
-  if(t==='set-color'){spaceSet('colors.'+me(),a.dataset.k);render();drawSheetKeep();return}
+  if(t==='defpct'){var key=a.dataset.k,nv=Math.max(0,Math.min(100,defPct(key)+(+a.dataset.v)));spaceSet('splitDef2.'+key,nv);drawSheetKeep();return}
+  if(t==='set-color'){spaceSet('pcolors.'+me(),a.dataset.k);render();drawSheetKeep();return}
   if(t==='profile'){openSheet('profile',{});return}
   if(t==='sp-copy')copyInvite();
   if(t==='sp-leave'){if(!spArmed){spArmed=true;drawSheetKeep();return}spArmed=false;leaveSpace()}
@@ -1367,8 +1369,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='10';
-var BUILT='Nov 3, 2026 7:40 AM';
+var APPV='11';
+var BUILT='Nov 3, 2026 10:30 AM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
