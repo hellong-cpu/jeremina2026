@@ -254,6 +254,10 @@ input,select,textarea{font:inherit;color:var(--fg)}
 .wkev.todo{background:transparent;box-shadow:inset 0 0 0 1px var(--line2);color:var(--fg2)}
 .wkev.todo .check{width:20px;height:20px}
 .wkev.dn2 .wn{text-decoration:line-through;color:var(--fg4)}
+.evrow .em .edot,.edot{display:block;width:12px;height:12px;border-radius:6px;background:var(--k)}
+.colors{display:flex;gap:12px}
+.colors button{width:36px;height:36px;border-radius:18px;background:var(--k)}
+.colors button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--fg)}
 .del{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--fg4);flex-shrink:0;font-size:13.5px;font-weight:600}
 .del.armed{background:var(--red-w);color:var(--danger);width:auto;padding:0 10px}
 
@@ -501,9 +505,9 @@ var PAL={
 var EVC=[['important','🌟','Important','blue'],['travel','🛫','Travel','violet'],['date','🩷','Date','red'],['birthday','🎀','Birthday','orange'],['health','🩺','Health','green'],['other','🔖','Other','gray']];
 function evCat(k){return EVC.filter(function(c){return c[0]===k})[0]}
 var MINA_COLORS={blue:1,green:1,orange:1,violet:1,red:1};
-function evKind(e){var c=evCat(e.category);if(c)return c[3];return MINA_COLORS[e.color]?e.color:'blue'}
-function evEmoji(e){var c=evCat(e.category);return c?c[1]:'📌'}
-function catToColor(k){var c=evCat(k);return c&&c[3]!=='gray'?c[3]:'blue'}
+function evKind(e){return MINA_COLORS[e.color]?e.color:'blue'}
+function evEmoji(e){return ''}
+var EVCOL=[['blue','Blue'],['green','Green'],['orange','Orange'],['violet','Purple'],['red','Red']];
 var XC=[['grocery','🛒','Grocery'],['baby','👶','Baby'],['restaurant','🍽','Food'],['travel','✈️','Travel'],['utilities','💡','Utilities'],['others','📦','Others']];
 var OLDX={'uber':'restaurant','식비':'restaurant','장보기':'grocery','생활':'utilities','교통':'others','여행':'travel','선물':'others','기타':'others'};
 function xcat(x){var k=x.cat;if(OLDX[k])k=OLDX[k];return XC.filter(function(c){return c[0]===k})[0]||XC[5]}
@@ -726,7 +730,7 @@ function feedH(){
   if(!spaceId())return '';
   var items=feedItems();if(!items.length)return '';
   function row(it){var x=it.x,em,lab,title,sub;
-    if(it.kind==='event'){em=evEmoji(x);lab='New event';title=x.title;sub=md(x.date)+(evSpan(x)?' – '+md(x.endDate):'')+' · '+(x.time?tLabel(x.time):'All day')}
+    if(it.kind==='event'){em='📅';lab='New event';title=x.title;sub=md(x.date)+(evSpan(x)?' – '+md(x.endDate):'')+' · '+(x.time?tLabel(x.time):'All day')}
     else if(it.kind==='task'){em='✅';lab='New task';title=x.text;sub=(assignee(x)==='together'?'Together':'For '+fullName(assignee(x)))+(x.due?' · due '+md(x.due):'')}
     else if(it.kind==='shop'){em='🧺';lab='Shopping list';title=x.text;sub=x.cat||''}
     else if(it.kind==='routine'){em='🔁';lab='New routine';title=x.name;sub=rtFreq(x)}
@@ -739,9 +743,9 @@ function feedH(){
 /* ---------- Home ---------- */
 function alertsH(){
   var out=[];
-  [0,1].forEach(function(n){var ds=addDays(TODAY,n);S.events.forEach(function(e){if((e.category==='important'||e.category==='travel')&&eventOn(e,ds)){var st=occStart(e,ds);if(n===1&&st!==ds)return;if(out.some(function(o){return o.e===e}))return;out.push({e:e,n:n})}})});
+  [0,1].forEach(function(n){var ds=addDays(TODAY,n);S.events.forEach(function(e){if(eventOn(e,ds)){var st=occStart(e,ds);if(n===1&&st!==ds)return;if(out.some(function(o){return o.e===e}))return;out.push({e:e,n:n})}})});
   if(!out.length)return '';
-  return '<div class="alert"><span>🔔</span><div>'+out.slice(0,3).map(function(o){return '<span>'+(o.n?'Tomorrow':'Today')+': '+evEmoji(o.e)+' '+esc(o.e.title)+(o.e.time?' · '+tLabel(o.e.time):'')+'</span>'}).join('')+'</div></div>';
+  return '<div class="alert"><span>🔔</span><div>'+out.slice(0,3).map(function(o){return '<span>'+(o.n?'Tomorrow':'Today')+': '+esc(o.e.title)+(o.e.time?' · '+tLabel(o.e.time):'')+'</span>'}).join('')+'</div></div>';
 }
 function homeV(){
   var greet=NOW.h<11?'Good morning':(NOW.h<17?'Good afternoon':'Good evening');
@@ -773,7 +777,7 @@ function evRow(e,opt){
   sub.push(e.time?tLabel(e.time)+(e.end?' – '+tLabel(e.end):''):'All day');
   if(isYearly(e))sub.push('Every year');else if(evRule(e))sub.push(ruleTextEn(evRule(e),e.date));
   if(e.note)sub.push(e.note);
-  return '<div class="evrow k-'+k+'"><button type="button" class="em" data-edit-event="'+e.id+'" aria-label="Edit">'+evEmoji(e)+'</button><button type="button" class="tx" data-edit-event="'+e.id+'"><b>'+esc(e.title)+byTag(e)+'</b><small>'+esc(sub.join(' · '))+'</small></button>'+
+  return '<div class="evrow k-'+k+'"><button type="button" class="em" data-edit-event="'+e.id+'" aria-label="Edit"><i class="edot"></i></button><button type="button" class="tx" data-edit-event="'+e.id+'"><b>'+esc(e.title)+byTag(e)+'</b><small>'+esc(sub.join(' · '))+'</small></button>'+
     (opt.rel!=null?'<span class="rel'+(opt.rel<=1?' soon':'')+'">'+relLabel(opt.rel)+'</span>':'')+
     (opt.del?'<button type="button" class="del'+(delArmed===e.id?' armed':'')+'" data-del-event="'+e.id+'" aria-label="Delete">'+(delArmed===e.id?'Delete?':ICON_TRASH)+'</button>':'')+'</div>';
 }
@@ -818,7 +822,7 @@ function weekV(){
   var st=weekStart(cal.sel),out='';
   for(var i=0;i<7;i++){var d=addDays(st,i),w=dowS(d),hol=holidayOn(d),evs=eventsOn(d),todos=S.todos.filter(function(t){return t.due===d});
     var rows=evs.map(function(e){var sp=evSpan(e),os=occStart(e,d);
-      return '<button type="button" class="wkev k-'+evKind(e)+'" data-edit-event="'+e.id+'"><span class="wt num">'+(e.time&&!sp?tLabel(e.time):(sp?'Day '+(daysBetween(os,d)+1)+'/'+(sp+1):'All day'))+'</span><span class="wn">'+evEmoji(e)+' '+esc(e.title)+'</span>'+byAv(e)+'</button>'}).join('')+
+      return '<button type="button" class="wkev k-'+evKind(e)+'" data-edit-event="'+e.id+'"><span class="wt num">'+(e.time&&!sp?tLabel(e.time):(sp?'Day '+(daysBetween(os,d)+1)+'/'+(sp+1):'All day'))+'</span><span class="wn">'+esc(e.title)+'</span>'+byAv(e)+'</button>'}).join('')+
       todos.map(function(t){return '<div class="wkev todo'+(t.done?' dn2':'')+'"><button class="check sq'+(t.done?' on':'')+'" data-toggle-todo="'+t.id+'" aria-label="Done">'+ICON_CHECK+'</button><span class="wn">'+esc(t.text)+'</span>'+byAv(t)+'</div>'}).join('');
     out+='<div class="wday'+(d===TODAY?' today':'')+'"><button type="button" class="wh" data-act="goday" data-d="'+d+'"><span class="wdn'+(w===0||hol?' sun':w===6?' sat':'')+'"><small>'+WD[w]+'</small><b class="num">'+parse(d).d+'</b></span>'+(hol?'<span class="whol">'+esc(hol)+'</span>':'')+'</button><div class="wlist">'+(rows||'<span class="wnone">—</span>')+'</div></div>';
   }
@@ -854,7 +858,7 @@ function dayH(s,inline){
   var items=layoutDay(timed),hrs='';
   for(var x=0;x<24;x++)hrs+='<div class="tl-h" style="top:'+(x*HPX)+'px"><span>'+(x?hourLabel(x):'')+'</span></div>';
   var blocks=items.map(function(it){var e=it.e,top=it.s/60*HPX,hh=Math.max(22,(it.en-it.s)/60*HPX-2),w=100/it.cols;
-    return '<button type="button" class="tl-ev k-'+evKind(e)+(hh<40?' short':'')+'" data-tlev="'+e.id+'" style="top:'+top+'px;height:'+hh+'px;left:calc('+(it.col*w)+'% + 2px);width:calc('+w+'% - 4px)"><b>'+evEmoji(e)+' '+esc(e.title)+'</b><small class="num">'+tLabel(e.time)+(e.end?' – '+tLabel(e.end):'')+'</small>'+byAv(e,'tlav')+'<i class="tl-rz" aria-hidden="true"></i></button>'}).join('');
+    return '<button type="button" class="tl-ev k-'+evKind(e)+(hh<40?' short':'')+'" data-tlev="'+e.id+'" style="top:'+top+'px;height:'+hh+'px;left:calc('+(it.col*w)+'% + 2px);width:calc('+w+'% - 4px)"><b>'+esc(e.title)+'</b><small class="num">'+tLabel(e.time)+(e.end?' – '+tLabel(e.end):'')+'</small>'+byAv(e,'tlav')+'<i class="tl-rz" aria-hidden="true"></i></button>'}).join('');
   var now='';if(s===TODAY){var nd=new Date();now='<div class="tl-now" style="top:'+((nd.getHours()*60+nd.getMinutes())/60*HPX)+'px"></div>'}
   h+='<div class="tl" id="tl"><div class="tl-inner" style="height:'+(24*HPX)+'px">'+hrs+'<div class="tl-grid" id="tlgrid" data-date="'+s+'"'+(inline?' data-inline="1"':'')+'>'+blocks+now+'<div class="tl-ghost" id="tlghost" hidden><span></span></div></div></div></div>'+
     '<p class="fine">Tap an empty hour for a 1-hour event, or '+(window.matchMedia('(pointer:coarse)').matches?'press and hold, then drag':'drag')+' to pick the length. Drag an event to move it; drag its bottom edge to change the length.</p>';
@@ -1166,7 +1170,7 @@ function drawSheet(){
     h='<h2>'+(d.id?'Edit event':'New event')+'</h2>'+
     '<div class="field"><label for="f-title">Title</label><input class="inp" id="f-title" data-f="title" value="'+esc(d.title)+'" placeholder="Dinner with Mom" data-autofocus></div>'+
     '<div class="grid2" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px"><div class="field"><label for="f-date">Date</label><input class="inp" type="date" id="f-date" data-f="date" value="'+esc(d.date)+'"></div><div class="field"><label for="f-edate">End date (optional)</label><input class="inp" type="date" id="f-edate" data-f="endDate" min="'+esc(d.date)+'" value="'+esc(d.endDate||'')+'"></div></div>'+
-    '<div class="field"><span class="lab">CATEGORY</span><div class="ecat">'+EVC.map(function(c){return '<button type="button" class="k-'+c[3]+'" data-f="category" data-v="'+c[0]+'" aria-pressed="'+((d.category||'other')===c[0])+'">'+c[1]+' '+c[2]+'</button>'}).join('')+'</div></div>'+
+    '<div class="field"><span class="lab">COLOR</span><div class="colors">'+EVCOL.map(function(c){return '<button type="button" class="k-'+c[0]+'" data-f="color" data-v="'+c[0]+'" aria-label="'+c[1]+'" aria-pressed="'+((MINA_COLORS[d.color]?d.color:'blue')===c[0])+'"></button>'}).join('')+'</div></div>'+
     timeH(d)+
     (other?'<div class="preview"><span class="ph">Repeats</span><span class="pl">'+esc(ruleTextEn(rr,d.date))+'</span><button type="button" class="textlink" data-act="stop-repeat" style="align-self:flex-start;padding:0">Stop repeating</button></div>':
       '<button type="button" class="toggle" data-act="yearly" aria-pressed="'+isYearly(d)+'"><span>Repeat every year<small>For birthdays and anniversaries</small></span><span class="sw"></span></button>')+
@@ -1307,8 +1311,8 @@ function saveSheet(){
   if(k==='cats'){saveCats(d.items||[]);return}
   if(!canSave())return;
   if(k==='event'){
-    var cat=d.category||'other',rr=evRule(d);
-    var o={id:d.id||uid(),createdAt:d.createdAt||now,title:d.title.trim(),date:d.date,endDate:d.endDate&&d.endDate>d.date?d.endDate:'',time:d.time||'',end:(d.time&&d.end&&d.end>d.time)?d.end:'',category:cat,color:catToColor(cat),note:(d.note||'').trim(),repeat:d.repeat||'none',rr:rr||undefined,by:d.by||me()};
+    var rr=evRule(d);
+    var o={id:d.id||uid(),createdAt:d.createdAt||now,title:d.title.trim(),date:d.date,endDate:d.endDate&&d.endDate>d.date?d.endDate:'',time:d.time||'',end:(d.time&&d.end&&d.end>d.time)?d.end:'',color:MINA_COLORS[d.color]?d.color:'blue',note:(d.note||'').trim(),repeat:d.repeat||'none',rr:rr||undefined,by:d.by||me()};
     if(!rr){o.repeat='none';delete o.rr}
     put('events',o);if(cal.view==='month'){var p=parse(d.date);cal.y=p.y;cal.m=p.m}
   }
@@ -1325,7 +1329,7 @@ function saveSheet(){
   var wasDay=form.back;closeSheet();toast(k==='settle'?'Payment recorded':k==='expense'?'Expense saved':k==='event'?'Event saved':'Saved');
   if(wasDay)openSheet('day',{date:wasDay});
 }
-function editEvent(ev,back){var d=copy(ev);d.end=d.end||'';d.endDate=d.endDate||'';if(!d.category)d.category='';openSheet('event',d);if(back)form.back=back}
+function editEvent(ev,back){var d=copy(ev);d.end=d.end||'';d.endDate=d.endDate||'';delete d.category;openSheet('event',d);if(back)form.back=back}
 function editExpense(x){
   if(isSettle(x))return openSheet('settle',{id:x.id,from:x.from,amt:String(x.jpy),date:x.date,note:x.note||'',createdAt:x.createdAt,by:x.by});
   var P=people(),d=copy(x);d.amount=String(x.amount);d.cat=xcat(x)[0];
@@ -1336,7 +1340,7 @@ function editExpense(x){
 }
 function newFor(kind,opt){
   var tp=parse(TODAY);opt=opt||{};
-  if(kind==='event'){openSheet('event',{title:'',date:opt.date||TODAY,endDate:'',time:opt.st!=null?fromMin(opt.st):'',end:opt.en!=null?fromMin(Math.min(opt.en,1439)):'',category:'other',note:'',repeat:'none'});if(opt.back)form.back=opt.back}
+  if(kind==='event'){openSheet('event',{title:'',date:opt.date||TODAY,endDate:'',time:opt.st!=null?fromMin(opt.st):'',end:opt.en!=null?fromMin(Math.min(opt.en,1439)):'',color:'blue',note:'',repeat:'none'});if(opt.back)form.back=opt.back}
   if(kind==='todo')openSheet('todo',{text:'',assignee:V.taskWho!=='all'?V.taskWho:'together',due:''});
   if(kind==='buy')openSheet('buy',{text:'',items:[{t:''}],cat:curCat()});
   if(kind==='routine')openSheet('routine',{name:'',ym:String(tp.m),yd:String(tp.d),mode:'weekly',weeks:'1',mtype:'nth',nth:'1',mwd:String(dowS(TODAY)),anchor:monOf(TODAY),every:'7',days:[dowS(TODAY)],mday:String(tp.d),last:''});
@@ -1468,8 +1472,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='15';
-var BUILT='Nov 3, 2026 2:30 PM';
+var APPV='16';
+var BUILT='Nov 3, 2026 2:15 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
