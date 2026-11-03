@@ -230,6 +230,11 @@ input,select,textarea{font:inherit;color:var(--fg)}
 .frow .tx span{font-size:16px;color:var(--fg3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow .ok{height:34px;padding:0 14px;border-radius:10px;background:var(--accent);color:var(--on-accent);font-size:17.5px;font-weight:700;flex-shrink:0}
 .feed .fmore{padding:8px 16px 10px;font-size:15.5px;color:var(--fg3);border-top:1px solid var(--soft)}
+.hist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;background:var(--soft)}
+.hrow{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-top:1px solid var(--line);font-size:15px;color:var(--fg2)}
+.hrow:first-child{border-top:0}
+.hrow b{font-size:14.5px;color:var(--fg);font-weight:600}
+.hrow .was{text-decoration:line-through;color:var(--fg4)}
 .del{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--fg4);flex-shrink:0;font-size:15.5px;font-weight:600}
 .del.armed{background:var(--red-w);color:var(--danger);width:auto;padding:0 10px}
 
@@ -693,7 +698,7 @@ function feedItems(){
   var now=Date.now(),changed=false,keep={};
   function add(col,x,kind){if(seen[x.id])return;if(!arrived[x.id]){arrived[x.id]=now;changed=true}keep[x.id]=arrived[x.id];out.push({col:col,x:x,kind:kind,t:Math.max(+x.createdAt||0,arrived[x.id])})}
   S.events.forEach(function(x){add('events',x,'event')});S.todos.forEach(function(x){add('todos',x,'task')});S.buys.forEach(function(x){add('buys',x,'shop')});
-  S.routines.forEach(function(x){add('routines',x,'routine')});S.expenses.forEach(function(x){add('expenses',x,isSettle(x)?'payment':'expense')});
+  S.routines.forEach(function(x){add('routines',x,'routine')});liveExp().forEach(function(x){add('expenses',x,isSettle(x)?'payment':'expense')});
   if(changed||Object.keys(arrived).length>Object.keys(keep).length+50){arrived=keep;lsSet('arr-'+me(),keep)}
   return out.sort(function(a,b){return b.t-a.t});
 }
@@ -961,10 +966,13 @@ function choreV(){
    expense: {kind:'expense', cat, amount, cur, rate (JPY per unit), jpy, date, paidBy, pct:{uid:%}, owe:{uid:JPY}, title (description), createdAt, by}
    payment: {kind:'settle', from, to, jpy, date, note, createdAt, by}   (from paid to) */
 function isSettle(x){return x.kind==='settle'}
+/* Deleted expenses are never removed from the server: they get `deleted` (time) and go to Trash. */
+function liveExp(){return S.expenses.filter(function(x){return !x.deleted})}
+function trashExp(){return S.expenses.filter(function(x){return x.deleted}).sort(function(a,b){return b.deleted-a.deleted})}
 function shareOf(x,u){return +((x.owe||{})[u])||0}
 function netBalances(){
   var net={},paid={};members().forEach(function(u){net[u]=0;paid[u]=0});
-  S.expenses.forEach(function(x){
+  liveExp().forEach(function(x){
     if(isSettle(x)){net[x.from]=(net[x.from]||0)+(+x.jpy||0);net[x.to]=(net[x.to]||0)-(+x.jpy||0);return}
     net[x.paidBy]=(net[x.paidBy]||0)+(+x.jpy||0);paid[x.paidBy]=(paid[x.paidBy]||0)+(+x.jpy||0);
     var o=x.owe||{};Object.keys(o).forEach(function(u){net[u]=(net[u]||0)-(+o[u]||0)});
@@ -1007,8 +1015,10 @@ function moneyV(){
     '<div class="acts">'+(bl.even?'':'<button class="btn small" data-act="settle">Record payment</button>')+'</div></div>';
   var f=V.txCat;
   var chips='<div class="chips scroll"><button class="chip" data-act="txcat" data-v="all" aria-pressed="'+(f==='all')+'">All</button>'+XC.map(function(c){return '<button class="chip" data-act="txcat" data-v="'+c[0]+'" aria-pressed="'+(f===c[0])+'">'+c[1]+' '+c[2]+'</button>'}).join('')+'</div>';
-  var rows=S.expenses.filter(function(x){return f==='all'?true:(!isSettle(x)&&xcat(x)[0]===f)}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.createdAt||0)-(a.createdAt||0)});
-  return head+seg+top+chips+'<div class="card flush">'+(rows.length?rows.map(expRow).join(''):'<div class="empty-box"><b>No expenses yet</b><span>Tap "Add Expense" — the balance updates for both of you.</span></div>')+'</div>';
+  var rows=liveExp().filter(function(x){return f==='all'?true:(!isSettle(x)&&xcat(x)[0]===f)}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.createdAt||0)-(a.createdAt||0)});
+  var tn=trashExp().length;
+  return head+seg+top+chips+'<div class="card flush">'+(rows.length?rows.map(expRow).join(''):'<div class="empty-box"><b>No expenses yet</b><span>Tap "Add Expense" — the balance updates for both of you.</span></div>')+'</div>'+
+    '<div style="display:flex;justify-content:center;gap:18px"><button type="button" class="textlink" data-act="trash">🗑 Trash'+(tn?' ('+tn+')':'')+'</button><button type="button" class="textlink" data-act="export">⬇ Export CSV</button></div>';
 }
 function expRow(x){
   if(isSettle(x))return '<button type="button" class="xrow settle" data-edit-exp="'+x.id+'"><span class="em">🤝</span><span class="xt"><b>'+esc(fullName(x.from))+' paid '+esc(fullName(x.to))+'</b><small>'+md(x.date)+' · Payment'+(x.note?' · '+esc(x.note):'')+'</small></span><span class="xa"><b>'+yen(x.jpy)+'</b></span></button>';
@@ -1016,7 +1026,7 @@ function expRow(x){
   return '<button type="button" class="xrow" data-edit-exp="'+x.id+'"><span class="em">'+c[1]+'</span><span class="xt"><b>'+esc(x.title||c[2])+'</b><small>'+md(x.date)+' · Paid by '+esc(fullName(x.paidBy))+' · '+esc(pctLabel(x))+'</small></span><span class="xa"><b>'+yen(x.jpy)+'</b>'+(x.cur&&x.cur!=='JPY'?'<small>'+esc(money(x.amount,x.cur))+'</small>':'')+'</span></button>';
 }
 function insightsV(){
-  var P=people(),exps=S.expenses.filter(function(x){return !isSettle(x)});
+  var P=people(),exps=liveExp().filter(function(x){return !isSettle(x)});
   var months={};exps.forEach(function(x){months[(x.date||'').slice(0,7)]=1});months[TODAY.slice(0,7)]=1;
   var mlist=Object.keys(months).sort().reverse();
   function amt(x){return ins.who==='all'?(+x.jpy||0):shareOf(x,ins.who)}
@@ -1026,7 +1036,7 @@ function insightsV(){
   f.forEach(function(x){total+=amt(x);P.forEach(function(u){sh[u]+=shareOf(x,u)})});
   if(ins.who!=='all')P.forEach(function(u){if(u!==ins.who)sh[u]=sh[u]});
   var mlabel=function(k){var p=k.split('-');return MON[+p[1]-1]+' '+p[0]};
-  var filters='<div class="field"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px"><label for="f-imon" class="sr">Month</label><select class="inp" id="f-imon" data-ins="mon"><option value="all"'+(ins.mon==='all'?' selected':'')+'>All time</option>'+mlist.map(function(k){return '<option value="'+k+'"'+(ins.mon===k?' selected':'')+'>'+mlabel(k)+'</option>'}).join('')+'</select>'+
+  var filters='<div style="display:flex;justify-content:flex-end"><button type="button" class="btn ghost small" data-act="export">⬇ Export CSV</button></div><div class="field"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px"><label for="f-imon" class="sr">Month</label><select class="inp" id="f-imon" data-ins="mon"><option value="all"'+(ins.mon==='all'?' selected':'')+'>All time</option>'+mlist.map(function(k){return '<option value="'+k+'"'+(ins.mon===k?' selected':'')+'>'+mlabel(k)+'</option>'}).join('')+'</select>'+
     '<label for="f-icat" class="sr">Category</label><select class="inp" id="f-icat" data-ins="cat"><option value="all">All categories</option>'+XC.map(function(c){return '<option value="'+c[0]+'"'+(ins.cat===c[0]?' selected':'')+'>'+c[1]+' '+c[2]+'</option>'}).join('')+'</select></div>'+
     '<div class="seg"><button data-act="iwho" data-v="all" aria-pressed="'+(ins.who==='all')+'">Both</button>'+P.map(function(u){return '<button data-act="iwho" data-v="'+u+'" aria-pressed="'+(ins.who===u)+'">'+esc(fullName(u))+'</button>'}).join('')+'</div></div>';
   var sum='<div class="sum3"><div><small>Total Spent</small><b>'+yen(total)+'</b></div>'+P.map(function(u){return '<div><small>'+esc(fullName(u))+'\'s share</small><b>'+yen(sh[u])+'</b></div>'}).join('')+'</div>';
@@ -1159,7 +1169,7 @@ function drawSheet(){
       '<p class="fine">'+esc(xcatName(d.cat))+' default: '+esc(fullName(P[0]))+' '+defPct(d.cat)+' / '+esc(fullName(P[1]))+' '+(100-defPct(d.cat))+' · change defaults in Settings</p></div>'+
     '<div class="preview" id="expv">'+expPreview(d)+'</div>'+
     '<div class="field"><label for="f-desc">Description (optional)</label><input class="inp" id="f-desc" data-f="title" value="'+esc(d.title||'')+'" placeholder="'+esc(xcatName(d.cat))+'"></div>'+
-    byLine(d)+footer(!!d.id,canSave());
+    footer(!!d.id,canSave())+(d.id?historyH(find('expenses',d.id)):'');
   } else if(k==='settle'){
     var b2=partnerUid();
     h='<h2>'+(d.id?'Payment':'Record payment')+'</h2><p class="fine">Record money you actually sent — it comes off the balance.</p>'+
@@ -1167,7 +1177,13 @@ function drawSheet(){
     '<div class="field"><label for="f-sa">Amount (¥)</label><input class="inp big num" id="f-sa" data-f="amt" inputmode="numeric" value="'+esc(d.amt)+'"></div>'+
     '<div class="field"><label for="f-sd">Date</label><input class="inp" type="date" id="f-sd" data-f="date" value="'+esc(d.date)+'"></div>'+
     '<div class="field"><label for="f-sn">Note (optional)</label><input class="inp" id="f-sn" data-f="note" value="'+esc(d.note)+'" placeholder="Sent via PayPay"></div>'+
-    footer(!!d.id,canSave(),d.id?'Save':'Record payment');
+    footer(!!d.id,canSave(),d.id?'Save':'Record payment')+(d.id?historyH(find('expenses',d.id)):'');
+  } else if(k==='trash'){
+    var tr=trashExp();
+    h='<h2>Trash</h2><p class="fine">Deleted expenses and payments are kept here — they don\'t count in the balance. Restore anything deleted by mistake.</p>'+
+      (tr.length?'<div class="card flush" style="padding:0">'+tr.map(function(x){var c=xcat(x),dd=Math.floor((Date.now()-x.deleted)/864e5);
+        return '<div class="xrow"><span class="em">'+(isSettle(x)?'🤝':c[1])+'</span><span class="xt"><b>'+esc(isSettle(x)?fullName(x.from)+' paid '+fullName(x.to):(x.title||c[2]))+'</b><small>'+md(x.date)+' · '+yen(x.jpy)+' · deleted '+(dd<1?'today':dd+'d ago')+(x.deletedBy?' by '+esc(fullName(x.deletedBy)):'')+'</small></span><button type="button" class="btn small" data-act="restore" data-id="'+x.id+'">Restore</button></div>'}).join('')+'</div>':'<div class="empty-box"><b>Trash is empty</b></div>')+
+      '<button type="button" class="btn ghost" data-act="sheet-close">Close</button>';
   } else if(k==='cats'){
     h='<h2>Shopping categories</h2><p class="fine">Renaming moves the items too. 미나의 하루 gets the same categories.</p>'+
     '<div class="items">'+(d.items||[]).map(function(it,i){return '<div class="irow"><span class="bul"></span><label for="it-'+i+'" class="sr">Category '+(i+1)+'</label><input class="inp" id="it-'+i+'" data-item="'+i+'" value="'+esc(it.t)+'" autocomplete="off"><button type="button" class="iconbtn" data-act="item-del" data-i="'+i+'" aria-label="Remove">×</button></div>'}).join('')+'<button type="button" class="textlink" data-act="item-add">+ Add category</button></div>'+footer(false,true);
@@ -1187,6 +1203,36 @@ function drawSheet(){
   sheet.innerHTML='<div class="scrim" data-act="sheet-close"></div><form class="sheet" id="sheet-form" role="dialog" aria-modal="true" aria-label="'+esc(k)+'"><span class="grab"></span>'+h+'</form>';
   if(k==='day')dayAfter();
 }
+function expSummary(x){if(!x)return '';if(isSettle(x))return fullName(x.from)+' → '+fullName(x.to)+' '+yen(x.jpy)+' · '+md(x.date);
+  return xcatName(xcat(x)[0])+(x.title?' "'+x.title+'"':'')+' · '+money(x.amount,x.cur)+((x.cur||'JPY')!=='JPY'?' ('+yen(x.jpy)+')':'')+' · '+md(x.date)+' · paid by '+fullName(x.paidBy)+' · '+pctLabel(x)}
+function withHistory(old,ne){
+  var h=(old&&Array.isArray(old.history))?old.history.slice():[];
+  if(!old){h.push({at:Date.now(),by:me(),what:'Added',now:expSummary(ne)});return h}
+  if(!h.length)h.push({at:old.createdAt||0,by:old.by||'',what:'Added',now:expSummary(old)});
+  var a=expSummary(old),b=expSummary(ne);if(a!==b)h.push({at:Date.now(),by:me(),what:'Edited',was:a,now:b});
+  return h.slice(-30);
+}
+function historyH(x){
+  if(!x)return '';var h=(x.history&&x.history.length)?x.history:[{at:x.createdAt||0,by:x.by||'',what:'Added',now:expSummary(x)}];
+  return '<div class="field"><span class="lab">HISTORY</span><div class="hist">'+h.slice().reverse().map(function(e){var t=e.at?new Date(e.at):null;
+    return '<div class="hrow"><b>'+esc(e.what)+(e.by?' by '+esc(fullName(e.by)):'')+(t?' · '+MON[t.getMonth()]+' '+t.getDate()+', '+tLabel(pad(t.getHours())+':'+pad(t.getMinutes())):'')+'</b>'+(e.was?'<span class="was">'+esc(e.was)+'</span>':'')+(e.now?'<span>'+esc(e.now)+'</span>':'')+'</div>'}).join('')+'</div></div>';
+}
+/* CSV of every expense and payment (deleted ones too, marked) — opens in Excel / Google Sheets */
+function exportCSV(){
+  var P=people(),n0=fullName(P[0]),n1=fullName(P[1]);
+  function q(v){v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+  var rows=[['Date','Type','Category','Description','Amount','Currency','Rate to JPY','JPY','Paid by',n0+' %',n1+' %',n0+' share (JPY)',n1+' share (JPY)','Added by','Deleted']];
+  S.expenses.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:(a.createdAt||0)-(b.createdAt||0)}).forEach(function(x){
+    var del=x.deleted?new Date(x.deleted).toISOString().slice(0,10):'';
+    if(isSettle(x))rows.push([x.date,'Payment','',fullName(x.from)+' paid '+fullName(x.to)+(x.note?' — '+x.note:''),x.jpy,'JPY',1,x.jpy,fullName(x.from),'','','','',fullName(x.by),del]);
+    else{var p=x.pct||{};rows.push([x.date,'Expense',xcatName(xcat(x)[0]),x.title||'',x.amount,x.cur||'JPY',x.rate||1,x.jpy,fullName(x.paidBy),p[P[0]]!=null?p[P[0]]:'',p[P[1]]!=null?p[P[1]]:'',shareOf(x,P[0]),shareOf(x,P[1]),fullName(x.by),del])}
+  });
+  var csv='\ufeff'+rows.map(function(r){return r.map(q).join(',')}).join('\r\n');
+  var name='Jeremina-expenses-'+TODAY+'.csv',blob=new Blob([csv],{type:'text/csv'});
+  try{var file=new File([blob],name,{type:'text/csv'});if(navigator.canShare&&navigator.canShare({files:[file]})&&window.matchMedia('(pointer:coarse)').matches){navigator.share({files:[file],title:name}).catch(function(){});return}}catch(e){}
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);
+  toast('Saved '+name);
+}
 function xcatName(k){var c=XC.filter(function(x){return x[0]===k})[0];return c?c[2]:'Expense'}
 function accountH(){
   if(!user)return '<div class="sync"><b>Not signed in</b></div>';
@@ -1196,7 +1242,7 @@ function accountH(){
 function spaceH(){
   if(!spaceId())return '';
   var others=members().filter(function(u){return u!==me()});
-  if(!others.length)return '<div class="sync"><b>Shared space · waiting</b><span class="fine">Send this invite link. Your partner taps it and signs in. (In 미나의 하루 you can also enter the code under 설정 → 남편과 공유.)</span><div class="codebox">'+esc(spaceId())+'</div><span class="urlline">'+esc(inviteLink())+'</span><button type="button" class="btn" data-act="sp-copy">Send invite link</button><button type="button" class="textlink" data-act="sp-leave">'+(spArmed?'Tap again to leave':'Leave shared space')+'</button></div>';
+  if(!others.length)return '<div class="sync"><b>Shared space · waiting</b><span class="fine">Send this invite link. Your partner taps it and signs in. (In 미나의 하루 you can also enter the code under 설정 → 남편과 공유.)</span><div class="codebox">'+esc(spaceId())+'</div><span class="urlline">'+esc(inviteLink())+'</span><button type="button" class="btn" data-act="sp-copy">Send invite link</button><p class="fine">You\'re the only member, so you can\'t leave — the shared data would have no one to see it.</p></div>';
   return '<div class="sync"><b>Shared space · connected</b><div class="whom"><span>Connected with '+esc(fullName(others[0]))+'<br><span class="st on"><i></i>Code '+esc(spaceId())+'</span></span></div><span class="fine">Events, tasks, shopping and routines are shared with 미나의 하루\'s "남편과 공유". Expenses only show in Jeremina.</span><button type="button" class="textlink" data-act="sp-leave">'+(spArmed?'Tap again to disconnect':'Disconnect')+'</button></div>';
 }
 function setField(name,v){
@@ -1228,9 +1274,11 @@ function saveSheet(){
   if(k==='routine'){if(d.mode==='weekly'&&!(d.days||[]).length){toast('Pick at least one day');return}put('routines',{id:d.id||uid(),name:d.name.trim(),mode:d.mode,every:Math.max(1,+d.every||7),days:(d.days||[]).map(Number),mday:+d.mday||1,ym:+d.ym||1,yd:+d.yd||1,amount:d.amount?+d.amount:undefined,mtype:d.mode==='monthly'?(d.mtype||'nth'):undefined,nth:+d.nth||1,mwd:d.mwd!=null&&d.mwd!==''?+d.mwd:1,weeks:d.mode==='weekly'?(+d.weeks||1):1,anchor:d.anchor||monOf(TODAY),last:d.last||'',prev:d.prev||'',since:d.since||TODAY,createdAt:d.createdAt||now,doneBy:d.doneBy||'',by:d.by||me()})}
   if(k==='expense'){
     var c=expCalc(d),cur=d.cur||'JPY',pa=Math.max(0,Math.min(100,+d.pa)),pct={};pct[P[0]]=pa;pct[P[1]]=100-pa;
-    put('expenses',{id:d.id||uid(),kind:'expense',cat:d.cat||'others',title:(d.title||'').trim(),amount:numIn(d.amount),cur:cur,rate:cur==='JPY'?1:+d.rate,jpy:c.jpy,date:d.date||TODAY,paidBy:d.paidBy||me(),split:'pct',pct:pct,owe:c.owe,createdAt:d.createdAt||now,by:d.by||me()});
+    var ne={id:d.id||uid(),kind:'expense',cat:d.cat||'others',title:(d.title||'').trim(),amount:numIn(d.amount),cur:cur,rate:cur==='JPY'?1:+d.rate,jpy:c.jpy,date:d.date||TODAY,paidBy:d.paidBy||me(),split:'pct',pct:pct,owe:c.owe,createdAt:d.createdAt||now,by:d.by||me()};
+    ne.history=withHistory(d.id&&find('expenses',d.id),ne);
+    put('expenses',ne);
   }
-  if(k==='settle'){var fr=d.from||me(),to=members().filter(function(u){return u!==fr})[0]||'';put('expenses',{id:d.id||uid(),kind:'settle',from:fr,to:to,jpy:Math.round(numIn(d.amt)),date:d.date||TODAY,note:(d.note||'').trim(),createdAt:d.createdAt||now,by:d.by||me()})}
+  if(k==='settle'){var fr=d.from||me(),to=members().filter(function(u){return u!==fr})[0]||'';var ns={id:d.id||uid(),kind:'settle',from:fr,to:to,jpy:Math.round(numIn(d.amt)),date:d.date||TODAY,note:(d.note||'').trim(),createdAt:d.createdAt||now,by:d.by||me()};ns.history=withHistory(d.id&&find('expenses',d.id),ns);put('expenses',ns)}
   var wasDay=form.back;closeSheet();toast(k==='settle'?'Payment recorded':k==='expense'?'Expense saved':k==='event'?'Event saved':'Saved');
   if(wasDay)openSheet('day',{date:wasDay});
 }
@@ -1279,6 +1327,8 @@ sheet.addEventListener('click',function(e){
   if(t==='sp-copy')copyInvite();
   if(t==='sp-leave'){if(!spArmed){spArmed=true;drawSheetKeep();return}spArmed=false;leaveSpace()}
   if(t==='logout')logout();
+  if(t==='sheet-del'&&(form.kind==='expense'||form.kind==='settle')){if(!armed){armed=true;drawSheetKeep();return}var dx=find('expenses',form.d.id);if(dx){dx=copy(dx);dx.deleted=Date.now();dx.deletedBy=me();(dx.history=dx.history||[]).push({at:Date.now(),by:me(),what:'Moved to Trash'});put('expenses',dx)}closeSheet();toast('Moved to Trash — restore it from Expenses → Trash');return}
+  if(t==='restore'){var rx=find('expenses',a.dataset.id);if(rx){rx=copy(rx);delete rx.deleted;delete rx.deletedBy;(rx.history=rx.history||[]).push({at:Date.now(),by:me(),what:'Restored'});put('expenses',rx);toast('Restored')}drawSheetKeep();return}
   if(t==='sheet-del'){if(!armed){armed=true;drawSheetKeep();return}var col={event:'events',todo:'todos',buy:'buys',routine:'routines',expense:'expenses',settle:'expenses'}[form.kind];var back=form.back;del(col,form.d.id);closeSheet();toast('Deleted');if(back)openSheet('day',{date:back})}
 });
 function drawSheetKeep(){if(!form)return;var st=sheet.querySelector('.sheet'),sc=st?st.scrollTop:0,ae=document.activeElement,aid=ae&&ae.id&&sheet.contains(ae)?ae.id:null,sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;drawSheet();var n=sheet.querySelector('.sheet');if(n)n.scrollTop=sc;if(aid){var el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1])}catch(_){}}}}
@@ -1342,6 +1392,8 @@ document.addEventListener('click',function(e){
   if(a==='q-buy')quickBuy();
   if(a==='edit-cats')openSheet('cats',{items:cats().map(function(c){return {t:c,o:c}})});
   if(a==='seen'){markSeen(ds.id);return}
+  if(a==='trash'){openSheet('trash',{});return}
+  if(a==='export'){exportCSV();return}
   if(a==='settings')openSheet('settings',{});
   if(a==='profile')openSheet('profile',{});
   if(a==='sp-copy')copyInvite();
@@ -1369,8 +1421,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='13';
-var BUILT='Nov 3, 2026 1:30 PM';
+var APPV='14';
+var BUILT='Nov 3, 2026 2:00 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
@@ -1467,6 +1519,7 @@ function joinSpace(code){
 }
 function leaveSpace(){
   var sid=spaceId();if(!sid||!user)return;
+  if(members().filter(function(u){return u!==user.uid}).length<1){toast("You're the last member — leaving would hide all shared data.");return}
   fsdb.collection('spaces').doc(sid).update({members:firebase.firestore.FieldValue.arrayRemove(user.uid)}).catch(function(){})
     .then(function(){return fsdb.collection('users').doc(user.uid).collection('meta').doc('space').delete()})
     .then(function(){stopSpace();clearAll();closeSheet();loadSpace();toast('Disconnected');render()});
