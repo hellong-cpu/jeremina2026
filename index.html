@@ -281,6 +281,24 @@ textarea.inp.tall{height:150px;white-space:pre-wrap}
 .sigtxt{font-family:cursive;font-size:26px}
 .pad{width:100%;height:110px;background:#fff;border:1.5px dashed var(--accent);border-radius:12px;touch-action:none;cursor:crosshair}
 @media (prefers-color-scheme: dark){.sigimg{filter:invert(1)}}
+.plsec{border:1px solid var(--line);border-radius:14px;padding:10px 12px 6px;display:flex;flex-direction:column;gap:2px;background:var(--soft)}
+.plsec.tog{background:var(--card)}
+.plh{display:flex;align-items:center;gap:8px;padding-bottom:4px}
+.plh b{font-size:15px;font-weight:700}
+.plrow{display:flex;align-items:center;gap:8px;min-height:40px;border-top:1px solid var(--line)}
+.plrow:first-of-type{border-top:0}
+.pdot{width:6px;height:6px;border-radius:3px;background:var(--fg3);flex-shrink:0;margin:0 6px 0 8px}
+.plin{flex:1;min-width:0;border:0;background:transparent;font-size:16px;height:40px;outline:none;color:var(--fg)}
+.plin::placeholder{color:var(--fg4)}
+.pladd{align-self:flex-start;font-size:14px;font-weight:600;color:var(--accent-ink);padding:6px 4px 4px 22px}
+.pldel{width:32px;height:32px;border-radius:8px;color:var(--fg4);font-size:20px;text-align:center;flex-shrink:0}
+.av.av-tog{background:var(--sunken);font-size:12px}
+.av.xs2{width:17px;height:17px;border-radius:9px;font-size:9px}
+.ptitle{font-size:15px;color:var(--fg2);font-weight:600}
+.plis{display:flex;flex-direction:column;gap:3px;padding-top:3px}
+.pli{display:flex;align-items:center;gap:6px;font-size:14.5px;color:var(--fg2);min-width:0}
+.pli span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plmore{font-size:12.5px;color:var(--fg3);padding-left:23px}
 .del{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--fg4);flex-shrink:0;font-size:13.5px;font-weight:600}
 .del.armed{background:var(--red-w);color:var(--danger);width:auto;padding:0 10px}
 
@@ -757,7 +775,7 @@ function feedH(){
     if(it.kind==='event'){em='📅';lab='New event';title=x.title;sub=md(x.date)+(evSpan(x)?' – '+md(x.endDate):'')+' · '+(x.time?tLabel(x.time):'All day')}
     else if(it.kind==='task'){em='✅';lab='New task';title=x.text;sub=(assignee(x)==='together'?'Together':'For '+fullName(assignee(x)))+(x.due?' · due '+md(x.due):'')}
     else if(it.kind==='shop'){em='🧺';lab='Shopping list';title=x.text;sub=x.cat||''}
-    else if(it.kind==='promise'){var pk=pkind(x.kind);em=pk[1];lab='New promise';title=x.title;sub=signedBy(x,me())?'You signed':'Waiting for your signature'}
+    else if(it.kind==='promise'){var pk=pkind(x.kind);em=pk[1];lab='New promise';title=prTitle(x);sub=signedBy(x,me())?'You signed':'Waiting for your signature'}
     else if(it.kind==='expense'){var c=xcat(x);em=c[1];lab='New expense';title=x.title||c[2];sub=yen(x.jpy)+' · paid by '+fullName(x.paidBy)}
     else{em='🤝';lab='Payment';title=fullName(x.from)+' paid '+fullName(x.to);sub=yen(x.jpy)}
     return '<div class="frow"><span class="em">'+em+'</span><span class="tx"><small>'+esc(lab)+(x.by?' · '+esc(x.by===me()?'You':fullName(x.by)):'')+'</small><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></span><button type="button" class="ok" data-act="seen" data-id="'+x.id+'">OK</button></div>'}
@@ -787,7 +805,7 @@ function homeV(){
   feedH()+alertsH()+
   (paired()?'<button class="card" data-go="money" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px"><span style="font-size:27.5px">💸</span><span style="flex:1;display:flex;flex-direction:column;gap:1px"><small class="muted" style="font-size:13.5px">Balance</small><b style="font-size:17.5px">'+balLine(true)+'</b></span><span class="link">›</span></button>':'')+
   '<div class="card flush"><div class="card-title" style="padding:14px 16px 4px"><b>TODAY</b><button class="link" data-go="cal">Calendar ›</button></div>'+(todayRows||'<div class="empty" style="padding:4px 16px 12px">Nothing on the calendar today.</div>')+'</div>'+
-  (function(){var w=livePr().filter(function(p){return !signedBy(p,me())});return w.length?'<button class="card" data-act="go-pr" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px"><span style="font-size:24px">✍️</span><span style="flex:1;display:flex;flex-direction:column;gap:1px"><small class="muted" style="font-size:13px">Promises</small><b style="font-size:16.5px">'+(w.length===1?esc(w[0].title)+' — waiting for your signature':w.length+' waiting for your signature')+'</b></span><span class="link">›</span></button>':''})()+
+  (function(){var w=livePr().filter(function(p){return !signedBy(p,me())});return w.length?'<button class="card" data-act="go-pr" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px"><span style="font-size:24px">✍️</span><span style="flex:1;display:flex;flex-direction:column;gap:1px"><small class="muted" style="font-size:13px">Promises</small><b style="font-size:16.5px">'+(w.length===1?esc(prTitle(w[0]))+' — waiting for your signature':w.length+' waiting for your signature')+'</b></span><span class="link">›</span></button>':''})()+
   '<div class="card flush"><div class="card-title" style="padding:14px 16px 4px"><b>TASKS LEFT · '+open.length+'</b><button class="link" data-act="go-tasks">All ›</button></div>'+(open.slice(0,5).map(todoRow).join('')||'<div class="empty" style="padding:4px 16px 12px">All done. Nice!</div>')+'</div>'+
   '<button class="card" data-act="go-shop" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px"><span style="font-size:25px">🧺</span><span style="flex:1;display:flex;flex-direction:column;gap:1px"><small class="muted" style="font-size:13.5px">Shopping list</small><b style="font-size:17px">'+(buysLeft.length?buysLeft.length+' to buy · '+esc(buysLeft.slice(0,3).map(function(b){return b.text}).join(', ')):'Nothing to buy')+'</b></span><span class="link">›</span></button>'+
   '<p class="fine num" style="text-align:center;padding:14px 0 4px">Last updated '+BUILT+' · Version '+APPV+'</p>';
@@ -976,7 +994,7 @@ function promiseV(){
     (tn?'<div style="text-align:center"><button type="button" class="textlink" data-act="ptrash">🗑 Trash ('+tn+')</button></div>':'');
 }
 function prRow(p){var k=pkind(p.kind),P=people(),both=P.length>1&&P.every(function(u){return signedBy(p,u)});
-  return '<button type="button" class="prow" data-edit-pr="'+p.id+'"><span class="em">'+k[1]+'</span><span class="xt"><small>'+mdy(p.date)+(both?' · <span class="okc">Signed by both ✓</span>':'')+'</small><b>'+esc(p.title)+'</b>'+(p.body?'<span class="pbody">'+esc(p.body)+'</span>':'')+'</span><span class="psig">'+P.map(function(u){var on=signedBy(p,u);return '<span class="sigdot'+(on?' on':'')+'" title="'+esc(fullName(u))+(on?' signed':' not signed yet')+'">'+av(u)+'<i>'+(on?'✓':'')+'</i></span>'}).join('')+'</span></button>';
+  return '<button type="button" class="prow" data-edit-pr="'+p.id+'"><span class="em">'+k[1]+'</span><span class="xt"><b>'+mdy(p.date)+'</b>'+(both?'<small><span class="okc">Signed by both ✓</span></small>':'')+(p.title?'<span class="ptitle">'+esc(p.title)+'</span>':'')+(function(){var L=p.lists||{},out=[];plKeys().forEach(function(k){(L[k]||[]).forEach(function(t){out.push('<span class="pli">'+plIcon(k,'xs2')+'<span>'+esc(t)+'</span></span>')})});return out.length?'<span class="plis">'+out.slice(0,3).join('')+(out.length>3?'<span class="plmore">+'+(out.length-3)+' more</span>':'')+'</span>':(p.body?'<span class="pbody">'+esc(p.body)+'</span>':'')})()+'</span><span class="psig">'+P.map(function(u){var on=signedBy(p,u);return '<span class="sigdot'+(on?' on':'')+'" title="'+esc(fullName(u))+(on?' signed':' not signed yet')+'">'+av(u)+'<i>'+(on?'✓':'')+'</i></span>'}).join('')+'</span></button>';
 }
 function sigSection(d){
   var p=find('promises',d.id)||d,P=people();
@@ -1026,7 +1044,14 @@ function signPromise(id){
   var P=people(),both=P.length>1&&P.every(function(u){return signedBy(p,u)});
   toast(both?'Signed by both of you 🤍':'Signed — waiting for '+fullName(partnerUid()));
 }
-function openPromise(id){var p=find('promises',id);if(!p)return;var d=copy(p);delete d.signs;d._pad=false;openSheet('promise',d)}
+function prTitle(p){if(p.title)return p.title;var L=p.lists||{},k=plKeys().filter(function(k){return (L[k]||[]).length})[0];if(k)return L[k][0];var b=String(p.body||'').split('\n')[0].trim();return b||'Promise'}
+function plKeys(){return people().concat(['together'])}
+function plLabel(k){return k==='together'?'Together we will':fullName(k)+' will'}
+function plIcon(k,cls){return k==='together'?'<span class="av av-tog'+(cls?' '+cls:'')+'">🤝</span>':av(k,cls)}
+function plClean(L){var o={};plKeys().forEach(function(k){var a=((L||{})[k]||[]).map(function(x){return String(x||'').trim()}).filter(Boolean);if(a.length)o[k]=a});return o}
+function plEdit(d){var L={};plKeys().forEach(function(k){var a=((d.lists||{})[k]||[]).slice();if(!a.length)a.push('');L[k]=a});d.lists=L}
+function plFocus(k,i){var el=sheet.querySelector('[data-li="'+k+'"][data-i="'+i+'"]');if(el){el.focus();try{el.setSelectionRange(el.value.length,el.value.length)}catch(e){}}}
+function openPromise(id){var p=find('promises',id);if(!p)return;var d=copy(p);delete d.signs;d._pad=false;plEdit(d);openSheet('promise',d)}
 
 /* ---------- To-Do ---------- */
 function todoSort(a,b){if(!!a.done!==!!b.done)return a.done?1:-1;var ad=a.due||'9999',bd=b.due||'9999';if(ad!==bd)return ad<bd?-1:1;return (a.createdAt||0)-(b.createdAt||0)}
@@ -1226,7 +1251,7 @@ function segH(name,opts,val){return '<div class="seg" role="group">'+opts.map(fu
 function chipsH(name,opts,val){return '<div class="chips">'+opts.map(function(o){return '<button type="button" class="chip" data-f="'+name+'" data-v="'+esc(o[0])+'" aria-pressed="'+(String(val)===String(o[0]))+'">'+o[1]+'</button>'}).join('')+'</div>'}
 function footer(isEdit,can,label){return '<div class="actions">'+(isEdit?'<button type="button" class="btn danger" data-act="sheet-del" style="flex:0 0 auto">'+(armed?'Tap again to delete':'Delete')+'</button>':'')+'<button type="submit" class="btn" '+(can?'':'disabled')+'>'+(label||'Save')+'</button></div>'}
 function byLine(d){return d.id&&d.by&&user&&d.by!==me()?'<p class="fine">Added by '+esc(fullName(d.by))+'</p>':''}
-function canSave(){var d=form.d;return {promise:(d.title||'').trim()&&d.date,event:(d.title||'').trim()&&d.date,todo:(d.text||'').trim(),buy:(d.text||'').trim(),routine:(d.name||'').trim(),expense:expCalc(d).ok,settle:numIn(d.amt)>0,cats:true}[form.kind]}
+function canSave(){var d=form.d;return {promise:!!d.date&&(!!String(d.body||'').trim()||Object.keys(plClean(d.lists)).length>0),event:(d.title||'').trim()&&d.date,todo:(d.text||'').trim(),buy:(d.text||'').trim(),routine:(d.name||'').trim(),expense:expCalc(d).ok,settle:numIn(d.amt)>0,cats:true}[form.kind]}
 /* time picker with clear AM / PM */
 function toMin(t){var p=String(t||'0:0').split(':');return (+p[0]||0)*60+(+p[1]||0)}
 function fromMin(m){m=Math.max(0,Math.min(1439,Math.round(m)));return pad(Math.floor(m/60))+':'+pad(m%60)}
@@ -1322,8 +1347,11 @@ function drawSheet(){
     var saved=d.id&&find('promises',d.id),anySig=saved&&Object.keys(saved.signs||{}).length;
     h='<h2>'+(d.id?'Promise':'New promise')+'</h2>'+
     '<div class="field"><label for="f-pd">Date</label><input class="inp" type="date" id="f-pd" data-f="date" value="'+esc(d.date)+'"></div>'+
-    '<div class="field"><label for="f-pt">Title</label><input class="inp" id="f-pt" data-f="title" value="'+esc(d.title)+'" placeholder="No phones at dinner" data-autofocus></div>'+
-    '<div class="field"><label for="f-pb">What we agreed</label><textarea class="inp tall" id="f-pb" data-f="body" placeholder="Write it in your own words — what happened and what you both promise.">'+esc(d.body||'')+'</textarea></div>'+
+    '<div class="field"><label for="f-pb">What happened (optional)</label><textarea class="inp" id="f-pb" data-f="body" placeholder="A few words about why you\'re writing this.">'+esc(d.body||'')+'</textarea></div>'+
+    plKeys().map(function(k){var a=(d.lists||{})[k]||[''];
+      return '<div class="plsec'+(k==='together'?' tog':'')+'"><div class="plh">'+plIcon(k)+'<b>'+esc(plLabel(k))+'</b></div>'+a.map(function(t,i){return '<div class="plrow"><span class="pdot"></span><label class="sr" for="li-'+k+'-'+i+'">'+esc(plLabel(k))+' '+(i+1)+'</label><input class="plin" id="li-'+k+'-'+i+'" data-li="'+k+'" data-i="'+i+'"'+(k===people()[0]&&i===0?' data-autofocus':'')+' value="'+esc(t)+'" placeholder="'+(i===0?(k==='together'?'Go for a walk every Sunday':'Put the phone away at dinner'):'Add another…')+'" autocomplete="off" enterkeyhint="next">'+(a.length>1||t?'<button type="button" class="pldel" data-act="li-del" data-k="'+k+'" data-i="'+i+'" aria-label="Remove">×</button>':'')+'</div>'}).join('')+'<button type="button" class="pladd" data-act="li-add" data-k="'+k+'">+ Add</button></div>'}).join('')+
+    '<p class="fine">Press Enter at the end of a line for the next bullet.</p>'+
+    
     (d.id?(anySig?'<p class="fine">Changing the date or words clears both signatures, so you sign the final version.</p>':'')+footer(true,canSave(),'Save changes')+sigSection(d)+prHistory(saved)
       :'<p class="fine">Save it first — then each of you signs at the bottom.</p>'+footer(false,canSave(),'Save'));
   } else if(k==='ptrash'){
@@ -1417,8 +1445,8 @@ function saveSheet(){
   if(k==='settings'||k==='day'||k==='profile'||k==='ptrash')return;
   if(k==='promise'){
     if(!canSave())return;
-    var old=d.id&&find('promises',d.id),po={id:d.id||uid(),title:d.title.trim(),body:(d.body||'').trim(),date:d.date||TODAY,createdAt:d.createdAt||now,by:d.by||me()};
-    var ch=old&&(old.title!==po.title||(old.body||'')!==po.body||old.date!==po.date);
+    var old=d.id&&find('promises',d.id),po={id:d.id||uid(),title:old&&old.title||'',body:(d.body||'').trim(),lists:plClean(d.lists),date:d.date||TODAY,createdAt:d.createdAt||now,by:d.by||me()};
+    var ch=old&&((old.body||'')!==po.body||old.date!==po.date||JSON.stringify(plClean(old.lists))!==JSON.stringify(po.lists));
     if(old&&!ch){closeSheet();toast('No changes');return}
     po.signs={};po.history=((old&&old.history)||[]).slice();
     po.history.push({at:now,by:me(),what:old?(Object.keys(old.signs||{}).length?'Edited — signatures cleared':'Edited'):'Written'});
@@ -1459,7 +1487,7 @@ function newFor(kind,opt){
   if(kind==='event'){openSheet('event',{title:'',date:opt.date||TODAY,endDate:'',time:opt.st!=null?fromMin(opt.st):'',end:opt.en!=null?fromMin(Math.min(opt.en,1439)):'',color:'blue',note:'',repeat:'none'});if(opt.back)form.back=opt.back}
   if(kind==='todo')openSheet('todo',{text:'',assignee:V.taskWho!=='all'?V.taskWho:'together',due:''});
   if(kind==='buy')openSheet('buy',{text:'',items:[{t:''}],cat:curCat()});
-  if(kind==='promise')openSheet('promise',{title:'',body:'',date:TODAY});
+  if(kind==='promise'){var nd={title:'',body:'',date:TODAY,lists:{}};plEdit(nd);openSheet('promise',nd)}
   if(kind==='routine')openSheet('routine',{name:'',ym:String(tp.m),yd:String(tp.d),mode:'weekly',weeks:'1',mtype:'nth',nth:'1',mwd:String(dowS(TODAY)),anchor:monOf(TODAY),every:'7',days:[dowS(TODAY)],mday:String(tp.d),last:''});
   if(kind==='expense'){if(!paired()){toast('Connect your partner first');return}openSheet('expense',{cat:'grocery',amount:'',cur:'JPY',rate:1,date:TODAY,paidBy:me(),pa:defPct('grocery'),title:''})}
 }
@@ -1478,6 +1506,8 @@ sheet.addEventListener('click',function(e){
   var a=e.target.closest('[data-act]');if(!a)return;
   var t=a.dataset.act;
   if(t==='sheet-close')closeSheet();
+  if(t==='li-del'){var ak=form.d.lists[a.dataset.k];ak.splice(+a.dataset.i,1);if(!ak.length)ak.push('');drawSheetKeep();return}
+  if(t==='li-add'){var aa=form.d.lists[a.dataset.k],ei=aa.indexOf('');if(ei<0){aa.push('');ei=aa.length-1;drawSheetKeep()}plFocus(a.dataset.k,ei);return}
   if(t==='item-add'){form.d.items=(form.d.items||[]).concat([{t:''}]);drawSheetKeep();focusItem(form.d.items.length-1);return}
   if(t==='item-del'){form.d.items.splice(+a.dataset.i,1);if(!form.d.items.length)form.d.items=[{t:''}];drawSheetKeep();return}
   if(t==='rate-auto'){form.d.rateManual=false;form.d._rk='';needRate(form.d);drawSheetKeep();return}
@@ -1503,12 +1533,19 @@ sheet.addEventListener('click',function(e){
 function drawSheetKeep(){if(!form)return;var st=sheet.querySelector('.sheet'),sc=st?st.scrollTop:0,ae=document.activeElement,aid=ae&&ae.id&&sheet.contains(ae)?ae.id:null,sel=aid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;drawSheet();var n=sheet.querySelector('.sheet');if(n)n.scrollTop=sc;if(aid){var el=document.getElementById(aid);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1])}catch(_){}}}}
 function focusItem(i){var el=sheet.querySelector('[data-item="'+i+'"]');if(el)el.focus()}
 sheet.addEventListener('keydown',function(e){
+  var li=e.target.dataset&&e.target.dataset.li;
+  if(li&&form&&form.d.lists){var a=form.d.lists[li],i=+e.target.dataset.i;
+    if(e.key==='Enter'&&!e.isComposing){e.preventDefault();if(!e.target.value.trim())return;a.splice(i+1,0,'');drawSheetKeep();plFocus(li,i+1);return}
+    if(e.key==='Backspace'&&!e.target.value&&a.length>1){e.preventDefault();a.splice(i,1);drawSheetKeep();plFocus(li,Math.max(0,i-1));return}
+    return}
   if(e.key!=='Enter'||e.isComposing||e.target.dataset.item==null)return;
   e.preventDefault();var i=+e.target.dataset.item;form.d.items.splice(i+1,0,{t:''});drawSheetKeep();focusItem(i+1);
 });
 sheet.addEventListener('input',function(e){
   if(!form)return;
   if(e.target.id==='f-mark'||e.target.id==='f-nick'){clearTimeout(markT);var el=e.target;markT=setTimeout(function(){var v=el.value.trim();if(!v)return;if(el.id==='f-mark')spaceSet('marks.'+me(),v.slice(0,2).toUpperCase());else spaceSet('nicks.'+me(),v.slice(0,16));render()},500);return}
+  if(e.target.dataset.li&&form.d.lists){var al=form.d.lists[e.target.dataset.li],ix=+e.target.dataset.i;al[ix]=e.target.value;
+    var sb=sheet.querySelector('button[type="submit"]');if(sb)sb.disabled=!canSave();return}
   if(e.target.dataset.item!=null&&form.d.items){form.d.items[+e.target.dataset.item].t=e.target.value;return}
   var f=e.target.dataset.f;if(!f||e.target.tagName==='SELECT')return;setField(f,e.target.value);
   if(form.kind==='todo'&&f==='due')sheet.querySelectorAll('[data-f="due"][data-v]').forEach(function(c){c.setAttribute('aria-pressed',String(c.dataset.v===e.target.value))});
@@ -1596,8 +1633,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='18';
-var BUILT='Nov 6, 2026 9:00 PM';
+var APPV='19';
+var BUILT='Nov 6, 2026 9:25 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
