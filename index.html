@@ -258,6 +258,29 @@ input,select,textarea{font:inherit;color:var(--fg)}
 .colors{display:flex;gap:12px}
 .colors button{width:36px;height:36px;border-radius:18px;background:var(--k)}
 .colors button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--fg)}
+.prow{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-top:1px solid var(--soft);width:100%;text-align:left}
+.prow:first-child{border-top:0}
+.prow .em{width:38px;height:38px;border-radius:12px;background:var(--accent2-weak);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.prow .xt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.prow .xt small{font-size:13px;color:var(--fg3);font-weight:600}
+.prow .xt b{font-size:17px;font-weight:600}
+.prow .pbody{font-size:14.5px;color:var(--fg2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.okc{color:var(--ok)}
+.psig{display:flex;gap:4px;flex-shrink:0;padding-top:4px}
+.sigdot{position:relative;opacity:.35}
+.sigdot.on{opacity:1}
+.sigdot i{position:absolute;right:-4px;bottom:-4px;width:14px;height:14px;border-radius:7px;background:var(--ok);color:#fff;font-size:9px;font-style:normal;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--card)}
+.sigdot:not(.on) i{display:none}
+textarea.inp.tall{height:150px;white-space:pre-wrap}
+.sigs{display:flex;flex-direction:column;gap:10px}
+.sig{border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--soft)}
+.sig .sname{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.sig small{font-size:13px;color:var(--fg3)}
+.sig.wait{border-style:dashed}
+.sigimg{display:block;max-width:100%;height:70px;object-fit:contain;object-position:left center;border-bottom:1.5px solid var(--line2);padding-bottom:4px}
+.sigtxt{font-family:cursive;font-size:26px}
+.pad{width:100%;height:110px;background:#fff;border:1.5px dashed var(--accent);border-radius:12px;touch-action:none;cursor:crosshair}
+@media (prefers-color-scheme: dark){.sigimg{filter:invert(1)}}
 .del{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--fg4);flex-shrink:0;font-size:13.5px;font-weight:600}
 .del.armed{background:var(--red-w);color:var(--danger);width:auto;padding:0 10px}
 
@@ -516,8 +539,8 @@ function curInfo(c){return CURS.filter(function(x){return x[0]===c})[0]||CURS[0]
 var CATS_DEF=['마트','생활용품','온라인','기타'];
 
 /* ================= Data: everything lives in the shared space spaces/{sid} ================= */
-var SHC=['events','todos','buys','routines','expenses'];
-var S={events:[],todos:[],buys:[],routines:[],expenses:[]};
+var SHC=['events','todos','buys','routines','expenses','promises'];
+var S={events:[],todos:[],buys:[],routines:[],expenses:[],promises:[]};
 function cats(){var c=space&&Array.isArray(space.cats)&&space.cats.length?space.cats:null;return (c||CATS_DEF).slice()}
 function curCat(){var c=cats();return c.indexOf(V.buyCat)>=0?V.buyCat:c[0]}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
@@ -542,6 +565,7 @@ function save(){var o={sid:spaceId(),uid:me(),space:space?{id:space.id,members:s
 var V=lsGet('view',{});
 V=Object.assign({tab:'home',todoSeg:'tasks',taskWho:'all',moneySeg:'tx',txCat:'all'},V);
 if(V.tab==='list')V.tab='todo';
+if(V.todoSeg==='rt')V.todoSeg='pr';
 if(['home','cal','money','todo'].indexOf(V.tab)<0)V.tab='home';
 var cal={y:NOW.y,m:NOW.m,view:'month',sel:TODAY};
 var ins={mon:TODAY.slice(0,7),cat:'all',who:'all'};
@@ -661,7 +685,7 @@ function render(){
   var gate=!appReady();
   document.body.classList.toggle('gated',gate);
   document.querySelectorAll('[data-go]').forEach(function(b){if(b.dataset.go===V.tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
-  document.getElementById('fabt').textContent={home:'Add Task',cal:'Add Event',money:'Add Expense',todo:V.todoSeg==='shop'?'Add Item':V.todoSeg==='rt'?'Add Routine':'Add Task'}[V.tab];
+  document.getElementById('fabt').textContent={home:'Add Task',cal:'Add Event',money:'Add Expense',todo:V.todoSeg==='shop'?'Add Item':V.todoSeg==='pr'?'Add Promise':'Add Task'}[V.tab];
   var act=document.activeElement,aid=act&&act.id&&view.contains(act)?act.id:null,sel=aid&&act.selectionStart!=null?[act.selectionStart,act.selectionEnd]:null,aval=aid?act.value:null;
   view.innerHTML=gate?gateV():{home:homeV,cal:calV,money:moneyV,todo:todoV}[V.tab]();
   if(!gate&&V.tab==='cal'&&cal.view==='day')dayAfter();
@@ -722,7 +746,7 @@ function feedItems(){
   var now=Date.now(),changed=false,keep={};
   function add(col,x,kind){if(seen[x.id])return;if(!arrived[x.id]){arrived[x.id]=now;changed=true}keep[x.id]=arrived[x.id];out.push({col:col,x:x,kind:kind,t:Math.max(+x.createdAt||0,arrived[x.id])})}
   S.events.forEach(function(x){add('events',x,'event')});S.todos.forEach(function(x){add('todos',x,'task')});S.buys.forEach(function(x){add('buys',x,'shop')});
-  S.routines.forEach(function(x){add('routines',x,'routine')});liveExp().forEach(function(x){add('expenses',x,isSettle(x)?'payment':'expense')});
+  livePr().forEach(function(x){add('promises',x,'promise')});liveExp().forEach(function(x){add('expenses',x,isSettle(x)?'payment':'expense')});
   if(changed||Object.keys(arrived).length>Object.keys(keep).length+50){arrived=keep;lsSet('arr-'+me(),keep)}
   return out.sort(function(a,b){return b.t-a.t});
 }
@@ -733,7 +757,7 @@ function feedH(){
     if(it.kind==='event'){em='📅';lab='New event';title=x.title;sub=md(x.date)+(evSpan(x)?' – '+md(x.endDate):'')+' · '+(x.time?tLabel(x.time):'All day')}
     else if(it.kind==='task'){em='✅';lab='New task';title=x.text;sub=(assignee(x)==='together'?'Together':'For '+fullName(assignee(x)))+(x.due?' · due '+md(x.due):'')}
     else if(it.kind==='shop'){em='🧺';lab='Shopping list';title=x.text;sub=x.cat||''}
-    else if(it.kind==='routine'){em='🔁';lab='New routine';title=x.name;sub=rtFreq(x)}
+    else if(it.kind==='promise'){var pk=pkind(x.kind);em=pk[1];lab='New '+pk[2].toLowerCase();title=x.title;sub=signedBy(x,me())?'You signed':'Waiting for your signature'}
     else if(it.kind==='expense'){var c=xcat(x);em=c[1];lab='New expense';title=x.title||c[2];sub=yen(x.jpy)+' · paid by '+fullName(x.paidBy)}
     else{em='🤝';lab='Payment';title=fullName(x.from)+' paid '+fullName(x.to);sub=yen(x.jpy)}
     return '<div class="frow"><span class="em">'+em+'</span><span class="tx"><small>'+esc(lab)+(x.by?' · '+esc(x.by===me()?'You':fullName(x.by)):'')+'</small><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></span><button type="button" class="ok" data-act="seen" data-id="'+x.id+'">OK</button></div>'}
@@ -763,7 +787,7 @@ function homeV(){
   feedH()+alertsH()+
   (paired()?'<button class="card" data-go="money" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px"><span style="font-size:27.5px">💸</span><span style="flex:1;display:flex;flex-direction:column;gap:1px"><small class="muted" style="font-size:13.5px">Balance</small><b style="font-size:17.5px">'+balLine(true)+'</b></span><span class="link">›</span></button>':'')+
   '<div class="card flush"><div class="card-title" style="padding:14px 16px 4px"><b>TODAY</b><button class="link" data-go="cal">Calendar ›</button></div>'+(todayRows||'<div class="empty" style="padding:4px 16px 12px">Nothing on the calendar today.</div>')+'</div>'+
-  (rts.length?'<div class="card flush"><div class="card-title" style="padding:14px 16px 4px"><b>ROUTINES DUE</b><button class="link" data-act="go-rt">All ›</button></div>'+rts.map(rtRow).join('')+'</div>':'')+
+  (function(){var w=livePr().filter(function(p){return !signedBy(p,me())});return w.length?'<button class="card" data-act="go-pr" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px"><span style="font-size:24px">✍️</span><span style="flex:1;display:flex;flex-direction:column;gap:1px"><small class="muted" style="font-size:13px">Promises</small><b style="font-size:16.5px">'+(w.length===1?esc(w[0].title)+' — waiting for your signature':w.length+' waiting for your signature')+'</b></span><span class="link">›</span></button>':''})()+
   '<div class="card flush"><div class="card-title" style="padding:14px 16px 4px"><b>TASKS LEFT · '+open.length+'</b><button class="link" data-act="go-tasks">All ›</button></div>'+(open.slice(0,5).map(todoRow).join('')||'<div class="empty" style="padding:4px 16px 12px">All done. Nice!</div>')+'</div>'+
   '<button class="card" data-act="go-shop" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px"><span style="font-size:25px">🧺</span><span style="flex:1;display:flex;flex-direction:column;gap:1px"><small class="muted" style="font-size:13.5px">Shopping list</small><b style="font-size:17px">'+(buysLeft.length?buysLeft.length+' to buy · '+esc(buysLeft.slice(0,3).map(function(b){return b.text}).join(', ')):'Nothing to buy')+'</b></span><span class="link">›</span></button>'+
   '<p class="fine num" style="text-align:center;padding:14px 0 4px">Last updated '+BUILT+' · Version '+APPV+'</p>';
@@ -935,6 +959,75 @@ function bindTimeline(tl,grid,day,inline){
   grid.addEventListener('contextmenu',function(e){e.preventDefault()});
 }
 
+/* ================= Promises =================
+   spaces/{sid}/promises: {kind, title, body, date, signs:{uid:{at,img}}, history:[...], createdAt, by, deleted?, deletedBy?}
+   Editing the words clears both signatures, so a signature always matches the final text. Never hard-deleted (Trash). */
+var PKIND=[['makeup','🤝','Made up'],['agreement','📝','Agreement'],['promise','💍','Promise']];
+function pkind(k){return PKIND.filter(function(x){return x[0]===k})[0]||PKIND[2]}
+function livePr(){return S.promises.filter(function(x){return !x.deleted}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.createdAt||0)-(a.createdAt||0)})}
+function trashPr(){return S.promises.filter(function(x){return x.deleted}).sort(function(a,b){return b.deleted-a.deleted})}
+function signedBy(p,u){return !!(p&&p.signs&&p.signs[u]&&p.signs[u].at)}
+function mdy(s){var p=parse(s);return MON[p.m-1]+' '+p.d+', '+p.y}
+function stamp(t){var x=new Date(t);return MON[x.getMonth()]+' '+x.getDate()+', '+x.getFullYear()+' · '+tLabel(pad(x.getHours())+':'+pad(x.getMinutes()))}
+function promiseV(){
+  var list=livePr(),wait=list.filter(function(p){return !signedBy(p,me())}).length,tn=trashPr().length;
+  return (wait?'<div class="alert"><span>✍️</span><div><span>'+wait+' waiting for your signature</span></div></div>':'')+
+    '<div class="card flush">'+(list.length?list.map(prRow).join(''):'<div class="empty-box"><b>No promises yet</b><span>After you make up or agree on something, write it down here and both sign it.</span></div>')+'</div>'+
+    (tn?'<div style="text-align:center"><button type="button" class="textlink" data-act="ptrash">🗑 Trash ('+tn+')</button></div>':'');
+}
+function prRow(p){var k=pkind(p.kind),P=people(),both=P.length>1&&P.every(function(u){return signedBy(p,u)});
+  return '<button type="button" class="prow" data-edit-pr="'+p.id+'"><span class="em">'+k[1]+'</span><span class="xt"><small>'+mdy(p.date)+' · '+k[2]+(both?' · <span class="okc">Signed by both ✓</span>':'')+'</small><b>'+esc(p.title)+'</b>'+(p.body?'<span class="pbody">'+esc(p.body)+'</span>':'')+'</span><span class="psig">'+P.map(function(u){var on=signedBy(p,u);return '<span class="sigdot'+(on?' on':'')+'" title="'+esc(fullName(u))+(on?' signed':' not signed yet')+'">'+av(u)+'<i>'+(on?'✓':'')+'</i></span>'}).join('')+'</span></button>';
+}
+function sigSection(d){
+  var p=find('promises',d.id)||d,P=people();
+  return '<div class="field"><span class="lab">SIGNATURES</span><div class="sigs">'+P.map(function(u){
+    var sg=p.signs&&p.signs[u];
+    if(sg&&sg.at)return '<div class="sig"><span class="sname">'+av(u)+esc(fullName(u))+'</span>'+(sg.img?'<img class="sigimg" src="'+esc(sg.img)+'" alt="'+esc(fullName(u))+'\'s signature">':'<span class="sigtxt">'+esc(fullName(u))+'</span>')+'<small>Signed '+stamp(sg.at)+'</small></div>';
+    if(u===me()){
+      if(d._pad)return '<div class="sig mine"><span class="sname">'+av(u)+'Sign as '+esc(fullName(u))+'</span><canvas id="sigpad" class="pad" width="640" height="220" aria-label="Signature pad"></canvas><small>Draw your signature with your finger, then tap Sign.</small><div class="actions"><button type="button" class="btn ghost small" data-act="sig-clear">Clear</button><button type="button" class="btn small" data-act="sig-ok">Sign</button></div></div>';
+      return '<div class="sig mine"><span class="sname">'+av(u)+esc(fullName(u))+'</span><button type="button" class="btn" data-act="sig-open">✍️ Sign as '+esc(fullName(u))+'</button></div>';
+    }
+    return '<div class="sig wait"><span class="sname">'+av(u)+esc(fullName(u))+'</span><small>Waiting for '+esc(fullName(u))+'\'s signature</small></div>';
+  }).join('')+'</div></div>';
+}
+function prHistory(p){
+  var h=(p&&p.history)||[];if(!h.length)return '';
+  return '<div class="field"><span class="lab">HISTORY</span><div class="hist">'+h.slice().reverse().map(function(e){return '<div class="hrow"><b>'+esc(e.what)+(e.by?' — '+esc(fullName(e.by)):'')+'</b><span>'+(e.at?stamp(e.at):'')+'</span></div>'}).join('')+'</div></div>';
+}
+var PAD=null;
+function bindPad(){
+  var c=document.getElementById('sigpad');if(!c){PAD=null;return}
+  var g=c.getContext('2d');g.lineWidth=5;g.lineCap='round';g.lineJoin='round';g.strokeStyle='#111';
+  PAD={c:c,ink:false};var last=null;
+  function pt(e){var r=c.getBoundingClientRect();return [(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]}
+  c.addEventListener('pointerdown',function(e){e.preventDefault();try{c.setPointerCapture(e.pointerId)}catch(_){}last=pt(e);g.beginPath();g.arc(last[0],last[1],2.5,0,7);g.fillStyle='#111';g.fill();PAD.ink=true});
+  c.addEventListener('pointermove',function(e){if(!last)return;e.preventDefault();var q=pt(e);g.beginPath();g.moveTo(last[0],last[1]);g.lineTo(q[0],q[1]);g.stroke();last=q;PAD.ink=true});
+  function up(){last=null}
+  c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);c.addEventListener('pointerleave',up);
+  c.addEventListener('touchmove',function(e){e.preventDefault()},{passive:false});
+}
+function padImage(){
+  var c=PAD.c,g=c.getContext('2d'),w=c.width,h=c.height,data=g.getImageData(0,0,w,h).data,x0=w,y0=h,x1=0,y1=0;
+  for(var y=0;y<h;y+=2)for(var x=0;x<w;x+=2){if(data[(y*w+x)*4+3]>10){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
+  if(x1<=x0)return '';
+  x0=Math.max(0,x0-8);y0=Math.max(0,y0-8);x1=Math.min(w,x1+8);y1=Math.min(h,y1+8);
+  var o=document.createElement('canvas'),sc=Math.min(1,400/(x1-x0));o.width=Math.round((x1-x0)*sc);o.height=Math.round((y1-y0)*sc);
+  o.getContext('2d').drawImage(c,x0,y0,x1-x0,y1-y0,0,0,o.width,o.height);
+  return o.toDataURL('image/png');
+}
+function signPromise(id){
+  if(!PAD||!PAD.ink){toast('Draw your signature first');return}
+  var img=padImage();if(!img){toast('Draw your signature first');return}
+  var p=find('promises',id);if(!p)return;
+  var sg={at:Date.now(),img:img},hist={at:Date.now(),by:me(),what:'Signed'};
+  p.signs=Object.assign({},p.signs||{});p.signs[me()]=sg;p.history=(p.history||[]).concat([hist]);save();
+  if(fsdb&&user&&spaceId()){var u={};u['signs.'+me()]=sg;u.history=firebase.firestore.FieldValue.arrayUnion(hist);spaceCol('promises').doc(id).update(u).catch(dbFail)}
+  form.d._pad=false;PAD=null;drawSheetKeep();render();
+  var P=people(),both=P.length>1&&P.every(function(u){return signedBy(p,u)});
+  toast(both?'Signed by both of you 🤍':'Signed — waiting for '+fullName(partnerUid()));
+}
+function openPromise(id){var p=find('promises',id);if(!p)return;var d=copy(p);delete d.signs;d._pad=false;openSheet('promise',d)}
+
 /* ---------- To-Do ---------- */
 function todoSort(a,b){if(!!a.done!==!!b.done)return a.done?1:-1;var ad=a.due||'9999',bd=b.due||'9999';if(ad!==bd)return ad<bd?-1:1;return (a.createdAt||0)-(b.createdAt||0)}
 function dueInfo(t){if(!t.due)return null;var n=diff(t.due);if(n<0)return {l:'Overdue · '+md(t.due),hot:true};if(n===0)return {l:'Today',hot:true};if(n===1)return {l:'Tomorrow',hot:false};return {l:mdw(t.due),hot:false}}
@@ -953,10 +1046,10 @@ function txt(t){var str=String(t==null?'':t),parts=str.split(URL_RE),us=str.matc
 function linkChips(us){return us.length?'<span class="links">'+us.map(function(u){return '<a class="linkchip" href="'+esc(u)+'" target="_blank" rel="noopener">Open '+esc(host(u))+' ↗</a>'}).join('')+'</span>':''}
 function buyNotes(b){return Array.isArray(b.notes)?b.notes:(b.note?[b.note]:[])}
 function todoV(){
-  var seg='<div class="seg"><button data-act="tseg" data-v="tasks" aria-pressed="'+(V.todoSeg==='tasks')+'">Tasks</button><button data-act="tseg" data-v="shop" aria-pressed="'+(V.todoSeg==='shop')+'">Shopping</button><button data-act="tseg" data-v="rt" aria-pressed="'+(V.todoSeg==='rt')+'">Routines</button></div>';
+  var seg='<div class="seg"><button data-act="tseg" data-v="tasks" aria-pressed="'+(V.todoSeg==='tasks')+'">Tasks</button><button data-act="tseg" data-v="shop" aria-pressed="'+(V.todoSeg==='shop')+'">Shopping</button><button data-act="tseg" data-v="pr" aria-pressed="'+(V.todoSeg==='pr')+'">Promises</button></div>';
   var head='<div class="row-head"><span class="h-page">To-Do</span></div>'+seg;
   if(V.todoSeg==='shop')return head+buyV();
-  if(V.todoSeg==='rt')return head+choreV();
+  if(V.todoSeg==='pr')return head+promiseV();
   var who=V.taskWho,P=people();
   var list=S.todos.filter(function(t){var a=assignee(t);if(who==='all')return true;if(who==='together')return a==='together';return a===who||a==='together'});
   var total=list.length,done=list.filter(function(t){return t.done}).length,left=total-done;
@@ -1133,7 +1226,7 @@ function segH(name,opts,val){return '<div class="seg" role="group">'+opts.map(fu
 function chipsH(name,opts,val){return '<div class="chips">'+opts.map(function(o){return '<button type="button" class="chip" data-f="'+name+'" data-v="'+esc(o[0])+'" aria-pressed="'+(String(val)===String(o[0]))+'">'+o[1]+'</button>'}).join('')+'</div>'}
 function footer(isEdit,can,label){return '<div class="actions">'+(isEdit?'<button type="button" class="btn danger" data-act="sheet-del" style="flex:0 0 auto">'+(armed?'Tap again to delete':'Delete')+'</button>':'')+'<button type="submit" class="btn" '+(can?'':'disabled')+'>'+(label||'Save')+'</button></div>'}
 function byLine(d){return d.id&&d.by&&user&&d.by!==me()?'<p class="fine">Added by '+esc(fullName(d.by))+'</p>':''}
-function canSave(){var d=form.d;return {event:(d.title||'').trim()&&d.date,todo:(d.text||'').trim(),buy:(d.text||'').trim(),routine:(d.name||'').trim(),expense:expCalc(d).ok,settle:numIn(d.amt)>0,cats:true}[form.kind]}
+function canSave(){var d=form.d;return {promise:(d.title||'').trim()&&d.date,event:(d.title||'').trim()&&d.date,todo:(d.text||'').trim(),buy:(d.text||'').trim(),routine:(d.name||'').trim(),expense:expCalc(d).ok,settle:numIn(d.amt)>0,cats:true}[form.kind]}
 /* time picker with clear AM / PM */
 function toMin(t){var p=String(t||'0:0').split(':');return (+p[0]||0)*60+(+p[1]||0)}
 function fromMin(m){m=Math.max(0,Math.min(1439,Math.round(m)));return pad(Math.floor(m/60))+':'+pad(m%60)}
@@ -1225,6 +1318,20 @@ function drawSheet(){
     '<div class="field"><label for="f-sd">Date</label><input class="inp" type="date" id="f-sd" data-f="date" value="'+esc(d.date)+'"></div>'+
     '<div class="field"><label for="f-sn">Note (optional)</label><input class="inp" id="f-sn" data-f="note" value="'+esc(d.note)+'" placeholder="Sent via PayPay"></div>'+
     footer(!!d.id,canSave(),d.id?'Save':'Record payment')+(d.id?historyH(find('expenses',d.id)):'');
+  } else if(k==='promise'){
+    var saved=d.id&&find('promises',d.id),anySig=saved&&Object.keys(saved.signs||{}).length;
+    h='<h2>'+(d.id?esc(pkind(d.kind)[2]):'New promise')+'</h2>'+
+    '<div class="field"><span class="lab">TYPE</span>'+segH('kind',PKIND.map(function(k){return [k[0],k[1]+' '+k[2]]}),d.kind||'promise')+'</div>'+
+    '<div class="field"><label for="f-pd">Date</label><input class="inp" type="date" id="f-pd" data-f="date" value="'+esc(d.date)+'"></div>'+
+    '<div class="field"><label for="f-pt">Title</label><input class="inp" id="f-pt" data-f="title" value="'+esc(d.title)+'" placeholder="No phones at dinner" data-autofocus></div>'+
+    '<div class="field"><label for="f-pb">What we agreed</label><textarea class="inp tall" id="f-pb" data-f="body" placeholder="Write it in your own words — what happened and what you both promise.">'+esc(d.body||'')+'</textarea></div>'+
+    (d.id?(anySig?'<p class="fine">Changing the type, date or words clears both signatures, so you sign the final version.</p>':'')+footer(true,canSave(),'Save changes')+sigSection(d)+prHistory(saved)
+      :'<p class="fine">Save it first — then each of you signs at the bottom.</p>'+footer(false,canSave(),'Save'));
+  } else if(k==='ptrash'){
+    var pt=trashPr();
+    h='<h2>Trash</h2><p class="fine">Deleted promises are kept here. Restore anything deleted by mistake.</p>'+
+      (pt.length?'<div class="card flush" style="padding:0">'+pt.map(function(x){var dd=Math.floor((Date.now()-x.deleted)/864e5);return '<div class="xrow"><span class="em">'+pkind(x.kind)[1]+'</span><span class="xt"><b>'+esc(x.title)+'</b><small>'+mdy(x.date)+' · deleted '+(dd<1?'today':dd+'d ago')+(x.deletedBy?' by '+esc(fullName(x.deletedBy)):'')+'</small></span><button type="button" class="btn small" data-act="prestore" data-id="'+x.id+'">Restore</button></div>'}).join('')+'</div>':'<div class="empty-box"><b>Trash is empty</b></div>')+
+      '<button type="button" class="btn ghost" data-act="sheet-close">Close</button>';
   } else if(k==='trash'){
     var tr=trashExp();
     h='<h2>Trash</h2><p class="fine">Deleted expenses and payments are kept here — they don\'t count in the balance. Restore anything deleted by mistake.</p>'+
@@ -1249,6 +1356,7 @@ function drawSheet(){
   }
   sheet.innerHTML='<div class="scrim" data-act="sheet-close"></div><form class="sheet" id="sheet-form" role="dialog" aria-modal="true" aria-label="'+esc(k)+'"><span class="grab"></span>'+h+'</form>';
   if(k==='day')dayAfter();
+  if(k==='promise'&&d._pad)bindPad();
 }
 function expSummary(x){if(!x)return '';if(isSettle(x))return fullName(x.from)+' → '+fullName(x.to)+' '+yen(x.jpy)+' · '+md(x.date);
   return xcatName(xcat(x)[0])+(x.title?' "'+x.title+'"':'')+' · '+money(x.amount,x.cur)+((x.cur||'JPY')!=='JPY'?' ('+yen(x.jpy)+')':'')+' · '+md(x.date)+' · paid by '+fullName(x.paidBy)+' · '+pctLabel(x)}
@@ -1307,7 +1415,16 @@ function setField(name,v){
 }
 function saveSheet(){
   var d=form.d,k=form.kind,now=Date.now(),P=people();
-  if(k==='settings'||k==='day'||k==='profile')return;
+  if(k==='settings'||k==='day'||k==='profile'||k==='ptrash')return;
+  if(k==='promise'){
+    if(!canSave())return;
+    var old=d.id&&find('promises',d.id),po={id:d.id||uid(),kind:d.kind||'promise',title:d.title.trim(),body:(d.body||'').trim(),date:d.date||TODAY,createdAt:d.createdAt||now,by:d.by||me()};
+    var ch=old&&(old.title!==po.title||(old.body||'')!==po.body||old.date!==po.date||(old.kind||'promise')!==po.kind);
+    if(old&&!ch){closeSheet();toast('No changes');return}
+    po.signs={};po.history=((old&&old.history)||[]).slice();
+    po.history.push({at:now,by:me(),what:old?(Object.keys(old.signs||{}).length?'Edited — signatures cleared':'Edited'):'Written'});
+    put('promises',po);closeSheet();toast(old?'Saved — please sign again':'Saved — now sign it');openPromise(po.id);return;
+  }
   if(k==='cats'){saveCats(d.items||[]);return}
   if(!canSave())return;
   if(k==='event'){
@@ -1343,6 +1460,7 @@ function newFor(kind,opt){
   if(kind==='event'){openSheet('event',{title:'',date:opt.date||TODAY,endDate:'',time:opt.st!=null?fromMin(opt.st):'',end:opt.en!=null?fromMin(Math.min(opt.en,1439)):'',color:'blue',note:'',repeat:'none'});if(opt.back)form.back=opt.back}
   if(kind==='todo')openSheet('todo',{text:'',assignee:V.taskWho!=='all'?V.taskWho:'together',due:''});
   if(kind==='buy')openSheet('buy',{text:'',items:[{t:''}],cat:curCat()});
+  if(kind==='promise')openSheet('promise',{kind:'promise',title:'',body:'',date:TODAY});
   if(kind==='routine')openSheet('routine',{name:'',ym:String(tp.m),yd:String(tp.d),mode:'weekly',weeks:'1',mtype:'nth',nth:'1',mwd:String(dowS(TODAY)),anchor:monOf(TODAY),every:'7',days:[dowS(TODAY)],mday:String(tp.d),last:''});
   if(kind==='expense'){if(!paired()){toast('Connect your partner first');return}openSheet('expense',{cat:'grocery',amount:'',cur:'JPY',rate:1,date:TODAY,paidBy:me(),pa:defPct('grocery'),title:''})}
 }
@@ -1375,6 +1493,11 @@ sheet.addEventListener('click',function(e){
   if(t==='sp-leave'){if(!spArmed){spArmed=true;drawSheetKeep();return}spArmed=false;leaveSpace()}
   if(t==='logout')logout();
   if(t==='sheet-del'&&(form.kind==='expense'||form.kind==='settle')){if(!armed){armed=true;drawSheetKeep();return}var dx=find('expenses',form.d.id);if(dx){dx=copy(dx);dx.deleted=Date.now();dx.deletedBy=me();(dx.history=dx.history||[]).push({at:Date.now(),by:me(),what:'Moved to Trash'});put('expenses',dx)}closeSheet();toast('Moved to Trash — restore it from Expenses → Trash');return}
+  if(t==='sig-open'){form.d._pad=true;drawSheetKeep();var sp=document.getElementById('sigpad');if(sp)sp.scrollIntoView({block:'center'});return}
+  if(t==='sig-clear'){if(PAD){PAD.c.getContext('2d').clearRect(0,0,PAD.c.width,PAD.c.height);PAD.ink=false}return}
+  if(t==='sig-ok'){signPromise(form.d.id);return}
+  if(t==='prestore'){var rp=find('promises',a.dataset.id);if(rp){var hr={at:Date.now(),by:me(),what:'Restored'};rp.deleted=0;rp.history=(rp.history||[]).concat([hr]);save();render();if(fsdb&&user&&spaceId())spaceCol('promises').doc(rp.id).update({deleted:firebase.firestore.FieldValue.delete(),deletedBy:firebase.firestore.FieldValue.delete(),history:firebase.firestore.FieldValue.arrayUnion(hr)}).catch(dbFail);toast('Restored')}drawSheetKeep();return}
+  if(t==='sheet-del'&&form.kind==='promise'){if(!armed){armed=true;drawSheetKeep();return}var dp=find('promises',form.d.id);if(dp){var hd={at:Date.now(),by:me(),what:'Moved to Trash'};dp.deleted=Date.now();dp.deletedBy=me();dp.history=(dp.history||[]).concat([hd]);save();render();if(fsdb&&user&&spaceId())spaceCol('promises').doc(dp.id).update({deleted:dp.deleted,deletedBy:me(),history:firebase.firestore.FieldValue.arrayUnion(hd)}).catch(dbFail)}closeSheet();toast('Moved to Trash');return}
   if(t==='restore'){var rx=find('expenses',a.dataset.id);if(rx){rx=copy(rx);delete rx.deleted;delete rx.deletedBy;(rx.history=rx.history||[]).push({at:Date.now(),by:me(),what:'Restored'});put('expenses',rx);toast('Restored')}drawSheetKeep();return}
   if(t==='sheet-del'){if(!armed){armed=true;drawSheetKeep();return}var col={event:'events',todo:'todos',buy:'buys',routine:'routines',expense:'expenses',settle:'expenses'}[form.kind];var back=form.back;del(col,form.d.id);closeSheet();toast('Deleted');if(back)openSheet('day',{date:back})}
 });
@@ -1417,6 +1540,7 @@ document.addEventListener('click',function(e){
   if(ds.editTodo){openSheet('todo',copy(find('todos',ds.editTodo)));return}
   if(ds.editBuy){var eb=copy(find('buys',ds.editBuy));eb.items=buyNotes(eb).map(function(t){return {t:t}});if(!eb.items.length)eb.items=[{t:''}];openSheet('buy',eb);return}
   if(ds.editEvent){var ev=find('events',ds.editEvent);if(ev)editEvent(ev);return}
+  if(ds.editPr){openPromise(ds.editPr);return}
   if(ds.editExp){var xx=find('expenses',ds.editExp);if(xx)editExpense(xx);return}
   if(ds.day){openSheet('day',{date:ds.day});return}
   if(ds.buycat){V.buyCat=ds.buycat;lsSet('view',V);render();var qi=document.getElementById('q-buy');if(qi)qi.focus();return}
@@ -1436,13 +1560,14 @@ document.addEventListener('click',function(e){
   if(a==='iwho'){ins.who=ds.v;render()}
   if(a==='go-tasks'){V.todoSeg='tasks';go('todo')}
   if(a==='go-shop'){V.todoSeg='shop';go('todo')}
-  if(a==='go-rt'){V.todoSeg='rt';go('todo')}
+  if(a==='go-pr'){V.todoSeg='pr';go('todo')}
   if(a==='settle'){var bl=balance();openSheet('settle',{from:bl.from||me(),amt:String(bl.amt||''),date:TODAY,note:''})}
   if(a==='clear-bought'){S.buys.filter(function(b){return b.done}).forEach(function(b){del('buys',b.id)});toast('Cleared')}
   if(a==='q-buy')quickBuy();
   if(a==='edit-cats')openSheet('cats',{items:cats().map(function(c){return {t:c,o:c}})});
   if(a==='seen'){markSeen(ds.id);return}
   if(a==='trash'){openSheet('trash',{});return}
+  if(a==='ptrash'){openSheet('ptrash',{});return}
   if(a==='export'){exportCSV();return}
   if(a==='settings')openSheet('settings',{});
   if(a==='profile')openSheet('profile',{});
@@ -1466,14 +1591,14 @@ function quickBuy(){var el=document.getElementById('q-buy');var v=el?el.value.tr
 document.getElementById('fab').addEventListener('click',function(){
   if(!appReady())return;
   if(V.tab==='cal'&&cal.view!=='month'){newFor('event',{date:cal.sel});return}
-  newFor({home:'todo',cal:'event',money:'expense',todo:V.todoSeg==='shop'?'buy':V.todoSeg==='rt'?'routine':'todo'}[V.tab]||'todo');
+  newFor({home:'todo',cal:'event',money:'expense',todo:V.todoSeg==='shop'?'buy':V.todoSeg==='pr'?'promise':'todo'}[V.tab]||'todo');
 });
 var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='16';
-var BUILT='Nov 3, 2026 2:15 PM';
+var APPV='17';
+var BUILT='Nov 6, 2026 8:40 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
@@ -1534,7 +1659,7 @@ function watchSpace(sid){
     if(!started){started=true;colsReady={};loadSeen();SHC.forEach(function(c){spUnsubs.push(fsdb.collection('spaces').doc(sid).collection(c).onSnapshot({includeMetadataChanges:true},function(snap){
       S[c]=snap.docs.map(function(x){var o=Object.assign({},x.data());o.id=x.id;return o});
       if(!snap.metadata.fromCache){colsReady[c]=true;trySeed()}
-      syncState='on';save();render();if(form&&form.kind==='day')drawSheetKeep();
+      syncState='on';save();render();if(form&&(form.kind==='day'||(form.kind==='promise'&&c==='promises'&&!form.d._pad)||form.kind==='ptrash'))drawSheetKeep();
     },function(){syncState='error';redraw()}))})}
     save();redraw();
   },function(){syncState='error';redraw()}));
