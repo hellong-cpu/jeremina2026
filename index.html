@@ -1182,7 +1182,7 @@ function moneyV(){
   var bl=balance(),P=people();
   var top='<div class="card owe">'+(bl.even?'<div class="l2 even">You\'re even 🎉</div>':'<div class="l1">💸 '+esc(fullName(bl.from))+' owes '+esc(fullName(bl.to))+'</div><div class="l2 num">'+yen(bl.amt)+'</div>')+
     '<div class="tiny num">'+P.map(function(u){return esc(fullName(u))+' paid '+yen(bl.paid[u]||0)}).join(' · ')+'</div>'+
-    '<div class="acts">'+(bl.even?'':'<button class="btn small" data-act="settle">Record payment</button>')+'</div></div>';
+    '</div>';
   var f=V.txCat;
   var chips='<div class="chips scroll"><button class="chip" data-act="txcat" data-v="all" aria-pressed="'+(f==='all')+'">All</button>'+XC.map(function(c){return '<button class="chip" data-act="txcat" data-v="'+c[0]+'" aria-pressed="'+(f===c[0])+'">'+c[1]+' '+c[2]+'</button>'}).join('')+'</div>';
   var rows=liveExp().filter(function(x){return f==='all'?true:(!isSettle(x)&&xcat(x)[0]===f)}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.createdAt||0)-(a.createdAt||0)});
@@ -1646,8 +1646,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='22';
-var BUILT='Nov 10, 2026 11:50 AM';
+var APPV='23';
+var BUILT='Nov 10, 2026 5:40 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
