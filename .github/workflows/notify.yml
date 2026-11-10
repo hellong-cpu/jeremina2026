@@ -1,0 +1,42 @@
+# Jeremina push notifications — runs about every 5 minutes (GitHub may delay runs a little).
+# Needs the repository secret FIREBASE_SERVICE_ACCOUNT. Logs show counts only.
+name: Notifications
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: notify
+  cancel-in-progress: false
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/notify
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        working-directory: .github/notify
+        run: npm install --omit=dev --no-audit --no-fund --loglevel=error
+      - name: Send
+        working-directory: .github/notify
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node notify.js
+      # GitHub turns off scheduled workflows after 60 days without repo activity.
+      # Re-enabling once a day resets that clock.
+      - name: Keep schedule alive
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 10 ]; then
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/notify.yml/enable" >/dev/null && echo "Schedule kept alive."
+          fi

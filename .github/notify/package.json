@@ -1,0 +1,1 @@
+{ "name": "jeremina-notify", "private": true, "version": "1.0.0", "description": "Push sender for Jeremina", "main": "notify.js", "dependencies": { "firebase-admin": "^12.7.0" } }

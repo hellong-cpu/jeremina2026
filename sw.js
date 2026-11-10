@@ -1,5 +1,5 @@
 /* Jeremina service worker: 화면 파일과 폰트·SDK만 캐시. 데이터(Firestore, 로그인, 환율) 요청은 그대로 통과. */
-const CACHE = 'jeremina-v21';
+const CACHE = 'jeremina-v22';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png?v=4', './apple-touch-icon.png?v=4'];
 const STATIC_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'www.gstatic.com', 'cdn.jsdelivr.net'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).catch(() => {}).then(() => self.skipWaiting())); });
@@ -20,4 +20,23 @@ self.addEventListener('fetch', e => {
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(r => { if (r.ok || r.type === 'opaque') { const c = r.clone(); caches.open(CACHE).then(x => x.put(req, c)); } return r; })));
+});
+
+/* Push notifications (sent by the GitHub Actions job through FCM as data messages) */
+self.addEventListener('push', e => {
+  let p = {}; try { p = e.data ? e.data.json() : {}; } catch (x) { p = { data: { body: e.data && e.data.text() } }; }
+  const d = p.data || p.notification || {};
+  const title = d.title || 'Jeremina';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: d.body || '', tag: d.tag || undefined, renotify: !!d.tag,
+    icon: 'icon-192.png?v=4', badge: 'icon-192.png?v=4', data: { url: d.url || './' }
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || './', self.registration.scope).href;
+  e.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(ws => {
+    for (const w of ws) if (w.url.startsWith(self.registration.scope) && 'focus' in w) return w.focus();
+    return clients.openWindow(url);
+  }));
 });

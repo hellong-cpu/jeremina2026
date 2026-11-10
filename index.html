@@ -569,6 +569,7 @@ function me(){return user?user.uid:cachedUid}
 function put(col,item){
   if(!spaceId()){toast('Not connected to a shared space');return}
   if(!item.by)item.by=me();
+  item.upd=Date.now();
   var arr=S[col].filter(function(x){return x.id!==item.id});arr.push(item);S[col]=arr;save();render();
   if(fsdb&&user)spaceCol(col).doc(item.id).set(clean(item)).catch(dbFail);
 }
@@ -803,7 +804,7 @@ function homeV(){
   var rts=rtToday().filter(function(r){return r.last!==TODAY});
   var open=S.todos.filter(function(t){return !t.done}).sort(todoSort);
   var buysLeft=S.buys.filter(function(b){return !b.done});
-  return wait+
+  return wait+pushAskH()+
   '<div class="head-row"><div class="head"><span class="h-sub">'+greet+(user?', '+esc(fullName(me())):'')+'</span><span class="h-big">'+WDL[dowS(TODAY)]+', '+MONL[NOW.m-1]+' '+NOW.d+'</span>'+pill+'</div><span class="hbtns"><button class="iconbtn" data-act="profile" aria-label="Your name, letter and color">'+av(me(),'md')+'</button><button class="iconbtn" data-act="settings" aria-label="Settings">'+ICON_GEAR+'</button></span></div>'+
   feedH()+alertsH()+
   (paired()?'<button class="card" data-go="money" style="padding:14px 16px;flex-direction:row;align-items:center;gap:12px"><span style="font-size:27.5px">💸</span><span style="flex:1;display:flex;flex-direction:column;gap:1px"><small class="muted" style="font-size:13.5px">Balance</small><b style="font-size:17.5px">'+balLine(true)+'</b></span><span class="link">›</span></button>':'')+
@@ -1042,7 +1043,7 @@ function signPromise(id){
   var p=find('promises',id);if(!p)return;
   var sg={at:Date.now(),img:img},hist={at:Date.now(),by:me(),what:'Signed'};
   p.signs=Object.assign({},p.signs||{});p.signs[me()]=sg;p.history=(p.history||[]).concat([hist]);save();
-  if(fsdb&&user&&spaceId()){var u={};u['signs.'+me()]=sg;u.history=firebase.firestore.FieldValue.arrayUnion(hist);spaceCol('promises').doc(id).update(u).catch(dbFail)}
+  if(fsdb&&user&&spaceId()){var u={};u['signs.'+me()]=sg;u.upd=Date.now();u.history=firebase.firestore.FieldValue.arrayUnion(hist);spaceCol('promises').doc(id).update(u).catch(dbFail)}
   form.d._pad=false;PAD=null;drawSheetKeep();render();
   var P=people(),both=P.length>1&&P.every(function(u){return signedBy(p,u)});
   toast(both?'Signed by both of you 🤍':'Signed — waiting for '+fullName(partnerUid()));
@@ -1380,7 +1381,7 @@ function drawSheet(){
     '<div class="field"><span class="lab">YOUR COLOR</span><div class="swgrid">'+Object.keys(PAL).map(function(c){return '<button type="button" class="swb" data-act="set-color" data-k="'+c+'" aria-pressed="'+(c===mine)+'"><i style="background:'+PAL[c].l[0]+'"></i>'+PAL[c].n+(c===pc?'<small>'+esc(fullName(partnerUid()))+'</small>':'')+'</button>'}).join('')+'</div></div>'+
     '<button type="button" class="btn ghost" data-act="sheet-close">Done</button>';
   } else if(k==='settings'){
-    h='<h2>Settings</h2>'+accountH()+spaceH()+
+    h='<h2>Settings</h2>'+accountH()+spaceH()+(user&&spaceId()?pushH():'')+
     (spaceId()?'<button type="button" class="sync" data-act="profile" style="flex-direction:row;align-items:center;width:100%"><b style="flex:1">Your name, letter and color</b>'+av(me(),'md')+'</button>':'')+
     (paired()?'<div class="sync"><b>Default split by category</b><p class="fine">Applied when you pick a category. You can still change it per expense.</p><div>'+XC.map(function(c){var v=defPct(c[0]);return '<div class="defrow"><span class="n">'+c[1]+' '+c[2]+'</span><button type="button" data-act="defpct" data-k="'+c[0]+'" data-v="-10" aria-label="Less">−</button><span class="v">'+v+' / '+(100-v)+'</span><button type="button" data-act="defpct" data-k="'+c[0]+'" data-v="10" aria-label="More">+</button></div>'}).join('')+'</div><p class="fine">Numbers are '+esc(fullName(people()[0]))+' / '+esc(fullName(people()[1]))+'.</p></div>':'')+
     '<p class="fine">The calendar shows Japanese holidays. Jeremina · Version '+APPV+' · '+BUILT+'</p>';
@@ -1525,6 +1526,11 @@ sheet.addEventListener('click',function(e){
   if(t==='sp-copy')copyInvite();
   if(t==='sp-leave'){if(!spArmed){spArmed=true;drawSheetKeep();return}spArmed=false;leaveSpace()}
   if(t==='logout')logout();
+  if(t==='push-on'){pushOn();return}
+  if(t==='push-off'){pushOff();return}
+  if(t==='push-test'){pushTest();return}
+  if(t==='push-pref'){pushSet(a.dataset.k);return}
+  if(t==='push-later'){lsSet('push-ask','later');render();return}
   if(t==='sheet-del'&&(form.kind==='expense'||form.kind==='settle')){if(!armed){armed=true;drawSheetKeep();return}var dx=find('expenses',form.d.id);if(dx){dx=copy(dx);dx.deleted=Date.now();dx.deletedBy=me();(dx.history=dx.history||[]).push({at:Date.now(),by:me(),what:'Moved to Trash'});put('expenses',dx)}closeSheet();toast('Moved to Trash — restore it from Expenses → Trash');return}
   if(t==='sig-open'){form.d._pad=true;drawSheetKeep();var sp=document.getElementById('sigpad');if(sp)sp.scrollIntoView({block:'center'});return}
   if(t==='sig-clear'){if(PAD){PAD.c.getContext('2d').clearRect(0,0,PAD.c.width,PAD.c.height);PAD.ink=false}return}
@@ -1640,8 +1646,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='21';
-var BUILT='Nov 8, 2026 7:40 AM';
+var APPV='22';
+var BUILT='Nov 10, 2026 11:50 AM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
@@ -1684,8 +1690,92 @@ function loadSpace(){
     if(!sid){if(!d.metadata.fromCache){metaKnown=true;spUnsubs.forEach(function(f){try{f()}catch(e){}});spUnsubs=[];clearAll();redraw();tryInvite()}return}
     metaKnown=true;if(pendingJoin){if(pendingJoin!==sid)toast("You're already in another shared space");pendingJoin='';lsSet('join','')}
     spUnsubs.forEach(function(f){try{f()}catch(e){}});spUnsubs=[];
-    watchSpace(sid);
+    watchSpace(sid);pushLoad();
   },function(e){syncState='error';metaKnown=true;redraw();toast("Couldn't read the shared space ("+((e&&e.code)||'error')+')')});
+}
+
+/* ================= Push notifications =================
+   Device token + choices live in users/{uid}/meta/push = {tokens:{key:{t,at,ua}}, prefs:{...}}.
+   A GitHub Actions job (.github/notify) reads changes every ~5 min and sends through FCM. */
+var FB_BASE='https://www.gstatic.com/firebasejs/10.14.1/';
+var VAPID='BKazBVGV2P7PlqSvvPePa3G_1DHybAUz56T7O5IKS6c-CQXxSDcPhikQdt-ihvMJEzjEAfaJHFIlQoUk6PjU1vg';
+var PUSH_TYPES=[
+  ['NEW FROM YOUR PARTNER',[['newEvent','New event'],['newTask','New task or shopping item'],['newExpense','New expense or payment'],['newPromise','New promise to sign']]],
+  ['REMINDERS',[['morning','Today\'s summary','Every morning at 8 AM'],['before1h','1 hour before an event'],['eveBefore','Tomorrow\'s events','The evening before, at 9 PM']]],
+  ['WHEN YOUR PARTNER…',[['taskDone','Finishes a task'],['signed','Signs a promise']]]
+];
+var push={data:null,busy:false,loaded:false};
+function pushIOS(){return /iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
+function pushStandalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true}
+function pushOK(){return 'Notification' in window&&'serviceWorker' in navigator&&'PushManager' in window}
+function pushRef(){return fsdb.collection('users').doc(user.uid).collection('meta').doc('push')}
+function pushPrefs(){var p={};PUSH_TYPES.forEach(function(g){g[1].forEach(function(t){p[t[0]]=true})});var q=push.data&&push.data.prefs||{};for(var k in q)p[k]=q[k]!==false;return p}
+function pushKey(t){var h=5381;for(var i=0;i<t.length;i++)h=((h*33)^t.charCodeAt(i))>>>0;return 'k'+h.toString(36)}
+function pushHere(){var k=lsGet('push-tok','');return !!(k&&pushOK()&&Notification.permission==='granted'&&push.data&&push.data.tokens&&push.data.tokens[k])}
+function pushRedraw(){if(form&&form.kind==='settings'&&!sheet.hidden)drawSheetKeep();render()}
+function pushLoad(){
+  if(!fsdb||!user||push.loaded)return;push.loaded=true;
+  pushRef().get().then(function(d){push.data=d.exists?d.data():{};pushRedraw();
+    /* refresh this device's token once a day (tokens can change) */
+    if(pushOK()&&Notification.permission==='granted'&&lsGet('push-tok','')&&lsGet('push-day','')!==TODAY)pushToken(false).catch(function(){});
+  }).catch(function(){push.loaded=false});
+}
+function pushMsg(){return firebase.messaging?Promise.resolve():loadScript(FB_BASE+'firebase-messaging-compat.js')}
+function pushToken(fresh){
+  return pushMsg().then(function(){return navigator.serviceWorker.ready}).then(function(reg){
+    return firebase.messaging().getToken({vapidKey:VAPID,serviceWorkerRegistration:reg});
+  }).then(function(t){
+    if(!t)throw new Error('no-token');
+    var k=pushKey(t),old=lsGet('push-tok',''),o={tokens:{}},ua=(pushIOS()?'iPhone/iPad':/Android/.test(navigator.userAgent)?'Android':'Computer');
+    o.tokens[k]={t:t,at:Date.now(),ua:ua};
+    if(fresh&&!(push.data&&push.data.prefs))o.prefs=pushPrefs();
+    var w=pushRef().set(o,{merge:true});
+    if(old&&old!==k){var u={};u['tokens.'+old]=firebase.firestore.FieldValue.delete();w=w.then(function(){return pushRef().update(u)}).catch(function(){})}
+    return w.then(function(){lsSet('push-tok',k);lsSet('push-day',TODAY);push.data=push.data||{};push.data.tokens=Object.assign({},push.data.tokens||{},o.tokens);if(old&&old!==k)delete push.data.tokens[old];if(o.prefs)push.data.prefs=o.prefs});
+  });
+}
+function pushOn(){
+  if(!pushOK()){toast(pushIOS()?'Add Jeremina to your Home Screen first':'This browser can\'t show notifications');return}
+  if(!fsdb||!user){toast('Sign in first');return}
+  push.busy=true;pushRedraw();
+  Notification.requestPermission().then(function(p){
+    if(p!=='granted')throw new Error('denied');
+    return pushToken(true);
+  }).then(function(){push.busy=false;lsSet('push-ask','done');pushRedraw();toast('Notifications are on ✓');
+    navigator.serviceWorker.ready.then(function(reg){reg.showNotification('Jeremina',{body:'Notifications are on. You\'ll hear about new things here 💛',icon:'icon-192.png?v=4',badge:'icon-192.png?v=4',tag:'welcome'})}).catch(function(){});
+  }).catch(function(e){push.busy=false;pushRedraw();
+    toast(e&&e.message==='denied'?'Notifications are blocked. Allow them in your phone or browser settings.':'Couldn\'t turn on notifications. Please try again.')});
+}
+function pushOff(){
+  var k=lsGet('push-tok','');if(!k||!fsdb||!user)return;
+  var u={};u['tokens.'+k]=firebase.firestore.FieldValue.delete();
+  pushRef().update(u).catch(function(){});
+  try{if(firebase.messaging)firebase.messaging().deleteToken().catch(function(){})}catch(e){}
+  if(push.data&&push.data.tokens)delete push.data.tokens[k];lsSet('push-tok','');pushRedraw();toast('Notifications off on this device');
+}
+function pushSet(k){if(!fsdb||!user)return;var p=pushPrefs();p[k]=!p[k];push.data=push.data||{};push.data.prefs=p;pushRedraw();var o={prefs:{}};o.prefs[k]=p[k];pushRef().set(o,{merge:true}).catch(dbFail)}
+function pushTest(){navigator.serviceWorker.ready.then(function(reg){return reg.showNotification('Jeremina · test',{body:'This is how notifications will look 👋',icon:'icon-192.png?v=4',badge:'icon-192.png?v=4',tag:'test'})}).then(function(){toast('Sent a test')}).catch(function(){toast('Couldn\'t show a test')})}
+function pushH(){
+  var h='<div class="sync"><b>🔔 Notifications</b>';
+  if(!pushOK()){
+    h+='<p class="fine">'+(pushIOS()&&!pushStandalone()?'On iPhone: tap Share ⬆︎ → <b>Add to Home Screen</b>, then open Jeremina from your Home Screen and come back here.':'This browser can\'t show notifications. Try Chrome, Edge or Safari.')+'</p></div>';return h;
+  }
+  if(pushHere()){
+    h+='<p class="fine" style="color:var(--accent-ink);font-weight:600">On for this device ✓</p>'+
+      '<div style="display:flex;gap:8px"><button type="button" class="btn ghost small" data-act="push-test">Show a test</button><button type="button" class="btn ghost small" data-act="push-off">Turn off here</button></div>';
+  } else if(Notification.permission==='denied'){
+    h+='<p class="fine">Notifications are blocked for Jeremina. Allow them in your '+(pushIOS()?'iPhone Settings → Notifications → Jeremina':'browser\'s site settings')+', then tap Turn on.</p><button type="button" class="btn" data-act="push-on">Turn on</button>';
+  } else {
+    h+='<p class="fine">Get a notice when your partner adds something, plus reminders. Everything below is already on.</p><button type="button" class="btn" data-act="push-on"'+(push.busy?' disabled':'')+'>'+(push.busy?'Turning on…':'Turn on notifications')+'</button>';
+  }
+  var P=pushPrefs();
+  h+=PUSH_TYPES.map(function(g){return '<span class="lab" style="margin-top:6px">'+g[0]+'</span>'+g[1].map(function(t){return '<button type="button" class="toggle" data-act="push-pref" data-k="'+t[0]+'" aria-pressed="'+!!P[t[0]]+'"><span>'+esc(t[1])+(t[2]?'<small>'+esc(t[2])+'</small>':'')+'</span><span class="sw"></span></button>'}).join('')}).join('');
+  h+='<p class="fine">Notices arrive within about 5–15 minutes. Choices apply to all your devices.</p></div>';
+  return h;
+}
+function pushAskH(){
+  if(!user||!paired()||lsGet('push-ask','')||!pushOK()||Notification.permission!=='default'||pushHere())return '';
+  return '<div class="notice"><span>🔔 Get notified when '+esc(fullName(partnerUid()))+' adds something, plus reminders.</span><button data-act="push-on">Turn on</button><button data-act="push-later" aria-label="Not now" style="background:none;color:var(--fg3)">✕</button></div>';
 }
 function watchSpace(sid){
   cachedSid=sid;
@@ -1782,7 +1872,7 @@ function loadFirebase(){
   var VS='10.14.1',bases=['https://www.gstatic.com/firebasejs/'+VS+'/','https://cdn.jsdelivr.net/npm/firebase@'+VS+'/'];
   function tryBase(i){
     if(i>=bases.length)return Promise.reject();
-    var B=bases[i];
+    var B=bases[i];FB_BASE=B;
     return loadScript(B+'firebase-app-compat.js').then(function(){return Promise.all([loadScript(B+'firebase-auth-compat.js'),loadScript(B+'firebase-firestore-compat.js')])}).catch(function(){return tryBase(i+1)});
   }
   tryBase(0).then(function(){initCloud()}).catch(function(){loadFailed=true;render()});
