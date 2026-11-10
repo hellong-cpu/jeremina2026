@@ -1646,8 +1646,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='23';
-var BUILT='Nov 10, 2026 5:40 PM';
+var APPV='24';
+var BUILT='Nov 10, 2026 9:25 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
@@ -1742,7 +1742,7 @@ function pushOn(){
     if(p!=='granted')throw new Error('denied');
     return pushToken(true);
   }).then(function(){push.busy=false;lsSet('push-ask','done');pushRedraw();toast('Notifications are on ✓');
-    navigator.serviceWorker.ready.then(function(reg){reg.showNotification('Jeremina',{body:'Notifications are on. You\'ll hear about new things here 💛',icon:'icon-192.png?v=4',badge:'icon-192.png?v=4',tag:'welcome'})}).catch(function(){});
+    navigator.serviceWorker.ready.then(function(reg){reg.showNotification('Jeremina',{body:'Notifications are on. You\'ll hear about new things here 💛',icon:'icon-192.png?v=4',badge:'badge-96.png',tag:'welcome'})}).catch(function(){});
   }).catch(function(e){push.busy=false;pushRedraw();
     toast(e&&e.message==='denied'?'Notifications are blocked. Allow them in your phone or browser settings.':'Couldn\'t turn on notifications. Please try again.')});
 }
@@ -1754,7 +1754,7 @@ function pushOff(){
   if(push.data&&push.data.tokens)delete push.data.tokens[k];lsSet('push-tok','');pushRedraw();toast('Notifications off on this device');
 }
 function pushSet(k){if(!fsdb||!user)return;var p=pushPrefs();p[k]=!p[k];push.data=push.data||{};push.data.prefs=p;pushRedraw();var o={prefs:{}};o.prefs[k]=p[k];pushRef().set(o,{merge:true}).catch(dbFail)}
-function pushTest(){navigator.serviceWorker.ready.then(function(reg){return reg.showNotification('Jeremina · test',{body:'This is how notifications will look 👋',icon:'icon-192.png?v=4',badge:'icon-192.png?v=4',tag:'test'})}).then(function(){toast('Sent a test')}).catch(function(){toast('Couldn\'t show a test')})}
+function pushTest(){navigator.serviceWorker.ready.then(function(reg){return reg.showNotification('Jeremina · test',{body:'This is how notifications will look 👋',icon:'icon-192.png?v=4',badge:'badge-96.png',tag:'test'})}).then(function(){toast('Sent a test')}).catch(function(){toast('Couldn\'t show a test')})}
 function pushH(){
   var h='<div class="sync"><b>🔔 Notifications</b>';
   if(!pushOK()){
