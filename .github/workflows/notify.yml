@@ -1,4 +1,7 @@
-# Jeremina push notifications — runs about every 5 minutes (GitHub may delay runs a little).
+# Jeremina push notifications.
+# - Started by hand (or by itself): checks every 5 minutes for ~5h40m, then starts the next run.
+#   (GitHub allows a workflow to start itself with workflow_dispatch.)
+# - The cron schedule is a backup in case that chain ever stops.
 # Needs the repository secret FIREBASE_SERVICE_ACCOUNT. Logs show counts only.
 name: Notifications
 on:
@@ -14,7 +17,7 @@ concurrency:
 jobs:
   send:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 355
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,14 +32,23 @@ jobs:
         working-directory: .github/notify
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: node notify.js
+          LOOP: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
+        run: |
+          start=$(date +%s)
+          while true; do
+            node notify.js || true
+            [ -z "$LOOP" ] && break
+            [ $(( $(date +%s) - start )) -gt 20400 ] && break   # ~5h40m
+            sleep $(( 300 - ($(date +%s) - start) % 300 ))
+          done
+      - name: Start the next run
+        if: always() && github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/actions/workflows/notify.yml/dispatches" -f ref=main && echo "Next run started."
       # GitHub turns off scheduled workflows after 60 days without repo activity.
-      # Re-enabling once a day resets that clock.
       - name: Keep schedule alive
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ "$(date -u +%H)" = "00" ] && [ "$(date -u +%M)" -lt 10 ]; then
-            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/notify.yml/enable" >/dev/null && echo "Schedule kept alive."
-          fi
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/notify.yml/enable" >/dev/null && echo "Schedule kept alive." || true
