@@ -760,7 +760,7 @@ function trySeed(){
   seen={};ids.forEach(function(id){seen[id]=1});saveSeenLocal();render();
   if(fsdb&&user)seenRef().set({seen:ids,init:true},{merge:true}).catch(function(){});
 }
-function markSeen(id){if(!seen)return;seen[id]=1;saveSeenLocal();render();if(fsdb&&user)seenRef().set({seen:firebase.firestore.FieldValue.arrayUnion(id)},{merge:true}).catch(function(){})}
+function markSeen(id){if(!seen)return;var ids=String(id).split(',').filter(Boolean);ids.forEach(function(i){seen[i]=1});saveSeenLocal();render();if(fsdb&&user)seenRef().set({seen:firebase.firestore.FieldValue.arrayUnion.apply(null,ids)},{merge:true}).catch(function(){})}
 /* everything new (from either of you), newest first; new items keep pushing in on top */
 function feedItems(){
   var out=[];if(!seen)return out;
@@ -770,7 +770,16 @@ function feedItems(){
   S.events.forEach(function(x){add('events',x,'event')});S.todos.forEach(function(x){add('todos',x,'task')});S.buys.forEach(function(x){add('buys',x,'shop')});
   livePr().forEach(function(x){add('promises',x,'promise')});liveExp().forEach(function(x){add('expenses',x,isSettle(x)?'payment':'expense')});
   if(changed||Object.keys(arrived).length>Object.keys(keep).length+50){arrived=keep;lsSet('arr-'+me(),keep)}
-  return out.sort(function(a,b){return b.t-a.t});
+  out.sort(function(a,b){return b.t-a.t});
+  /* Shopping items one person added within the same hour → one "what's new" card */
+  var res=[],grp={};
+  out.forEach(function(it){
+    if(it.kind!=='shop'){res.push(it);return}
+    var k=it.x.by||'',g=grp[k];
+    if(g&&g.t-it.t<=3600e3){g.items.push(it);return}
+    g=grp[k]={col:'buys',kind:'shop',x:it.x,t:it.t,items:[it]};res.push(g);
+  });
+  return res;
 }
 function feedH(){
   if(!spaceId())return '';
@@ -778,11 +787,12 @@ function feedH(){
   function row(it){var x=it.x,em,lab,title,sub;
     if(it.kind==='event'){em='📅';lab='New event';title=x.title;sub=md(x.date)+(evSpan(x)?' – '+md(x.endDate):'')+' · '+(x.time?tLabel(x.time):'All day')}
     else if(it.kind==='task'){em='✅';lab='New task';title=x.text;sub=(assignee(x)==='together'?'Together':'For '+fullName(assignee(x)))+(x.due?' · due '+md(x.due):'')}
-    else if(it.kind==='shop'){em='🧺';lab='Shopping list';title=x.text;sub=x.cat||''}
+    else if(it.kind==='shop'){em='🧺';lab='Shopping list';var its=it.items||[it];
+      if(its.length>1){title=its.length+' items added';sub=its.map(function(i){return i.x.text}).join(', ')}else{title=x.text;sub=x.cat||''}}
     else if(it.kind==='promise'){var pk=pkind(x.kind);em=pk[1];lab='New promise';title=prTitle(x);sub=signedBy(x,me())?'You signed':'Waiting for your signature'}
     else if(it.kind==='expense'){var c=xcat(x);em=c[1];lab='New expense';title=x.title||c[2];sub=yen(x.jpy)+' · paid by '+fullName(x.paidBy)}
     else{em='🤝';lab='Payment';title=fullName(x.from)+' paid '+fullName(x.to);sub=yen(x.jpy)}
-    return '<div class="frow"><span class="em">'+em+'</span><span class="tx"><small>'+esc(lab)+(x.by?' · '+esc(x.by===me()?'You':fullName(x.by)):'')+'</small><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></span><button type="button" class="ok" data-act="seen" data-id="'+x.id+'">OK</button></div>'}
+    return '<div class="frow"><span class="em">'+em+'</span><span class="tx"><small>'+esc(lab)+(x.by?' · '+esc(x.by===me()?'You':fullName(x.by)):'')+'</small><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></span><button type="button" class="ok" data-act="seen" data-id="'+(it.items?it.items.map(function(i){return i.x.id}).join(','):x.id)+'">OK</button></div>'}
   return '<div class="feed"><div class="fh"><span>WHAT\'S NEW</span><span class="num">'+items.length+'</span></div>'+items.slice(0,3).map(row).join('')+(items.length>3?'<div class="fmore">'+(items.length-3)+' more after these</div>':'')+'</div>';
 }
 
@@ -1646,8 +1656,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='25';
-var BUILT='Nov 11, 2026 2:30 PM';
+var APPV='26';
+var BUILT='Nov 11, 2026 2:40 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
