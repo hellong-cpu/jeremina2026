@@ -1,5 +1,5 @@
 /* Jeremina service worker: 화면 파일과 폰트·SDK만 캐시. 데이터(Firestore, 로그인, 환율) 요청은 그대로 통과. */
-const CACHE = 'jeremina-v24';
+const CACHE = 'jeremina-v25';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png?v=4', './apple-touch-icon.png?v=4'];
 const STATIC_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'www.gstatic.com', 'cdn.jsdelivr.net'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).catch(() => {}).then(() => self.skipWaiting())); });
@@ -26,10 +26,19 @@ self.addEventListener('fetch', e => {
 self.addEventListener('push', e => {
   let p = {}; try { p = e.data ? e.data.json() : {}; } catch (x) { p = { data: { body: e.data && e.data.text() } }; }
   const d = p.data || p.notification || {};
-  const title = d.title || 'Jeremina';
-  e.waitUntil(self.registration.showNotification(title, {
-    body: d.body || '', tag: d.tag || undefined, renotify: !!d.tag,
-    icon: 'icon-192.png?v=4', badge: 'badge-96.png', data: { url: d.url || './' }
+  const title = d.title || 'Jeremina', body = d.body || '';
+  /* Keep ONE notification on screen: fold any still showing into it.
+     (Android groups 2+ under the browser's own icon, which hides our heart.) */
+  e.waitUntil(self.registration.getNotifications().then(list => {
+    let prev = [];
+    list.forEach(n => { prev = prev.concat((n.data && n.data.items) || [{ t: n.title, b: n.body }]); n.close(); });
+    const items = [{ t: title, b: body }].concat(prev).slice(0, 8);
+    const one = items.length === 1;
+    return self.registration.showNotification(one ? title : '💛 ' + items.length + ' new in Jeremina', {
+      body: one ? body : items.map(i => i.t + (i.b ? ' — ' + i.b : '')).join('\n'),
+      tag: 'jm', renotify: true,
+      icon: 'icon-192.png?v=4', badge: 'badge-96.png', data: { url: d.url || './', items }
+    });
   }));
 });
 self.addEventListener('notificationclick', e => {
