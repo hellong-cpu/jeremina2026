@@ -1662,8 +1662,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='27';
-var BUILT='Nov 14, 2026 7:35 PM';
+var APPV='28';
+var BUILT='Nov 16, 2026 8:10 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
@@ -1730,12 +1730,22 @@ function pushKey(t){var h=5381;for(var i=0;i<t.length;i++)h=((h*33)^t.charCodeAt
 function pushHere(){var k=lsGet('push-tok','');return !!(k&&pushOK()&&Notification.permission==='granted'&&push.data&&push.data.tokens&&push.data.tokens[k])}
 function pushRedraw(){if(form&&form.kind==='settings'&&!sheet.hidden)drawSheetKeep();render()}
 function pushLoad(){
-  if(!fsdb||!user||push.loaded)return;push.loaded=true;
+  if(!fsdb||!user||push.loaded)return;push.loaded=true;push.at=Date.now();
   pushRef().get().then(function(d){push.data=d.exists?d.data():{};pushRedraw();
-    /* refresh this device's token once a day (tokens can change) */
-    if(pushOK()&&Notification.permission==='granted'&&lsGet('push-tok','')&&lsGet('push-day','')!==TODAY)pushToken(false).catch(function(){});
+    var k=lsGet('push-tok','');
+    if(!(pushOK()&&Notification.permission==='granted'&&k))return;
+    /* our device was dropped by the sender (delivery failed) → get a brand-new token, not the cached broken one */
+    if(!(push.data.tokens||{})[k])pushRenew();
+    /* otherwise refresh once a day (tokens can change) */
+    else if(lsGet('push-day','')!==TODAY)pushToken(false).catch(function(){});
   }).catch(function(){push.loaded=false});
 }
+function pushRenew(){
+  return pushMsg().then(function(){return firebase.messaging().deleteToken().catch(function(){})})
+    .then(function(){return pushToken(false)}).then(pushRedraw).catch(function(){});
+}
+/* the app can stay open for days: re-check when it comes back to the screen */
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&push.loaded&&Date.now()-(push.at||0)>3600e3){push.loaded=false;pushLoad()}});
 function pushMsg(){return firebase.messaging?Promise.resolve():loadScript(FB_BASE+'firebase-messaging-compat.js')}
 function pushToken(fresh){
   return pushMsg().then(function(){return navigator.serviceWorker.ready}).then(function(reg){
