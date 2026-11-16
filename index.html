@@ -1662,8 +1662,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='28';
-var BUILT='Nov 16, 2026 8:10 PM';
+var APPV='29';
+var BUILT='Nov 16, 2026 9:25 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
@@ -1908,11 +1908,16 @@ function loadFirebase(){
 function checkUpdate(){
   try{fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){
     var m=t&&t.match(/var APPV='(\d+)'/);if(!m||+m[1]<=+APPV)return;
-    if(sheet.hidden&&!(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))){location.reload();return}
-    if(document.getElementById('upd'))return;
-    var b=document.createElement('div');b.className='update-bar';b.id='upd';b.innerHTML='<span>A new version is ready</span><button type="button">Update</button>';b.querySelector('button').onclick=function(){location.reload()};document.body.appendChild(b);
+    updPending=true;updTry();
   }).catch(function(){})}catch(e){}
 }
+/* New version: install by itself as soon as nobody is typing or has a sheet open (no button) */
+var updPending=false;
+function updIdle(){return sheet.hidden&&!(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))}
+function updTry(){if(updPending&&(updIdle()||document.visibilityState==='hidden'))location.reload()}
+setInterval(updTry,2000);
+setInterval(checkUpdate,15*60e3);
+document.addEventListener('visibilitychange',updTry);
 
 /* ================= Start ================= */
 (function boot(){
