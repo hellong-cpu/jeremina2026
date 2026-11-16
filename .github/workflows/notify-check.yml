@@ -1,6 +1,12 @@
-# One-off device check for Jeremina notifications (delivers nothing; logs device status only).
+# One-off device check for Jeremina notifications. Default delivers nothing; send_test sends a test notice.
 name: Notifications check
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      send_test:
+        description: 'Send a test notification to every device'
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -19,4 +25,4 @@ jobs:
       - working-directory: .github/notify
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: node notify.js --diag
+        run: node notify.js ${{ inputs.send_test && '--test' || '--diag' }}

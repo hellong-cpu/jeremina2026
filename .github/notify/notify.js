@@ -15,7 +15,8 @@ async function main() {
   const stats = { spaces: 0, changed: 0, sent: 0, failed: 0, removed: 0 };
 
   const spaces = await db.collection('spaces').get();
-  if (process.argv.includes('--diag')) { /* check devices without delivering anything */
+  const TEST = process.argv.includes('--test');
+  if (process.argv.includes('--diag') || TEST) { /* --diag: check devices without delivering. --test: send a test notice to every device */
     for (const sd of spaces.docs) {
       const sp = sd.data() || {}; if (!Array.isArray(sp.members) || sp.members.length < 2) continue;
       for (let i = 0; i < sp.members.length; i++) {
@@ -24,7 +25,7 @@ async function main() {
         const off = Object.entries(L.prefsOf(P)).filter(([, v]) => v === false).map(([k]) => k);
         console.log(`member #${i + 1}: ${toks.length} device(s) [${toks.map(([, v]) => (v && v.ua) || '?').join(', ')}], turned off: ${off.join(', ') || 'none'}`);
         if (toks.length) {
-          const r = await admin.messaging().sendEach(toks.map(([, v]) => ({ token: v.t, data: { title: 'x' } })), true);
+          const r = await admin.messaging().sendEach(toks.map(([, v]) => ({ token: v.t, data: TEST ? { title: '💛 Test from Jeremina', body: 'If you can read this, notifications work on this phone.', tag: 'test', url: APP_URL } : { title: 'x' }, webpush: { headers: { Urgency: 'high', TTL: '3600' } } })), !TEST);
           r.responses.forEach((x, j) => console.log(`  device ${j + 1} (${toks[j][1].ua || '?'}, added ${new Date(toks[j][1].at || 0).toISOString().slice(0, 10)}): ${x.success ? 'OK' : (x.error && x.error.code)}`));
         }
       }
