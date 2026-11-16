@@ -15,6 +15,22 @@ async function main() {
   const stats = { spaces: 0, changed: 0, sent: 0, failed: 0, removed: 0 };
 
   const spaces = await db.collection('spaces').get();
+  if (process.argv.includes('--diag')) { /* check devices without delivering anything */
+    for (const sd of spaces.docs) {
+      const sp = sd.data() || {}; if (!Array.isArray(sp.members) || sp.members.length < 2) continue;
+      for (let i = 0; i < sp.members.length; i++) {
+        const p = await db.collection('users').doc(sp.members[i]).collection('meta').doc('push').get();
+        const P = p.exists ? p.data() : {}, toks = Object.entries(P.tokens || {});
+        const off = Object.entries(L.prefsOf(P)).filter(([, v]) => v === false).map(([k]) => k);
+        console.log(`member #${i + 1}: ${toks.length} device(s) [${toks.map(([, v]) => (v && v.ua) || '?').join(', ')}], turned off: ${off.join(', ') || 'none'}`);
+        if (toks.length) {
+          const r = await admin.messaging().sendEach(toks.map(([, v]) => ({ token: v.t, data: { title: 'x' } })), true);
+          r.responses.forEach((x, j) => console.log(`  device ${j + 1} (${toks[j][1].ua || '?'}, added ${new Date(toks[j][1].at || 0).toISOString().slice(0, 10)}): ${x.success ? 'OK' : (x.error && x.error.code)}`));
+        }
+      }
+    }
+    return;
+  }
   for (const sd of spaces.docs) {
     const space = sd.data() || {}, sid = sd.id;
     if (!Array.isArray(space.members) || !space.members.length) continue;
@@ -84,7 +100,8 @@ async function main() {
         if (r.success) { stats.sent++; return; }
         stats.failed++;
         const code = r.error && r.error.code;
-        if (code === 'messaging/registration-token-not-registered' || code === 'messaging/invalid-registration-token' || code === 'messaging/invalid-argument') dead['tokens.' + toks[i][0]] = FV.delete();
+        console.log(`  failed: ${m.pref || 'bundle'} → member #${space.members.indexOf(m.to) + 1} (${toks[i][1].ua || '?'}): ${code}`);
+        if (code === 'messaging/registration-token-not-registered' || code === 'messaging/invalid-registration-token') dead['tokens.' + toks[i][0]] = FV.delete();
       });
       if (Object.keys(dead).length) { stats.removed += Object.keys(dead).length; await db.collection('users').doc(m.to).collection('meta').doc('push').update(dead); Object.keys(dead).forEach(k => delete push[m.to].tokens[k.slice(7)]); }
     }

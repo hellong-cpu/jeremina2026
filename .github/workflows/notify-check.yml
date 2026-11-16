@@ -1,0 +1,22 @@
+# One-off device check for Jeremina notifications (delivers nothing; logs device status only).
+name: Notifications check
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/notify
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - working-directory: .github/notify
+        run: npm install --omit=dev --no-audit --no-fund --loglevel=error
+      - working-directory: .github/notify
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node notify.js --diag
