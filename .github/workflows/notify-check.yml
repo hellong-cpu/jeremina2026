@@ -7,6 +7,10 @@ on:
         description: 'Send a test notification to every device'
         type: boolean
         default: false
+      only_member:
+        description: 'Only this member number (1 or 2); empty = everyone'
+        type: string
+        default: ''
 permissions:
   contents: read
 jobs:
@@ -25,4 +29,5 @@ jobs:
       - working-directory: .github/notify
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          ONLY_MEMBER: ${{ inputs.only_member }}
         run: node notify.js ${{ inputs.send_test && '--test' || '--diag' }}

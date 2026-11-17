@@ -20,6 +20,7 @@ async function main() {
     for (const sd of spaces.docs) {
       const sp = sd.data() || {}; if (!Array.isArray(sp.members) || sp.members.length < 2) continue;
       for (let i = 0; i < sp.members.length; i++) {
+        if (process.env.ONLY_MEMBER && String(i + 1) !== process.env.ONLY_MEMBER) continue;
         const p = await db.collection('users').doc(sp.members[i]).collection('meta').doc('push').get();
         const P = p.exists ? p.data() : {}, toks = Object.entries(P.tokens || {});
         const off = Object.entries(L.prefsOf(P)).filter(([, v]) => v === false).map(([k]) => k);
