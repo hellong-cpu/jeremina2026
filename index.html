@@ -595,7 +595,18 @@ if(['home','cal','money','todo'].indexOf(V.tab)<0)V.tab='home';
 var cal={y:NOW.y,m:NOW.m,view:'month',sel:TODAY};
 var ins={mon:TODAY.slice(0,7),cat:'all',who:'all'};
 var leftOnly=false,delArmed='';
-function go(tab){V.tab=tab;lsSet('view',V);render();window.scrollTo(0,0)}
+function go(tab,fromBack){if(!fromBack)navArm();if(!fromBack&&tab!==V.tab){navStack.push(V.tab);if(navStack.length>20)navStack.shift()}V.tab=tab;lsSet('view',V);render();window.scrollTo(0,0)}
+/* ===== Back swipe / back button (Android): close sheet → previous tab → Home → (swipe again) exit ===== */
+var navStack=[];
+function navArm(){try{if(!history.state||!history.state.jm)history.pushState({jm:1},'')}catch(e){}}
+window.addEventListener('popstate',function(){
+  if(!sheet.hidden){closeSheet();navArm();return}
+  if(navStack.length){var t=navStack.pop();go(t===V.tab?'home':t,true);navArm();return}
+  if(V.tab!=='home'){go('home',true);navArm();return}
+  /* on Home with nothing open: this back stays in the app; the next one leaves */
+  toast('Swipe back again to close');
+});
+
 
 /* ================= Utils ================= */
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -1266,7 +1277,7 @@ function rateBox(d){
 
 /* ================= Sheets ================= */
 var sheet=document.getElementById('sheet'),form=null,armed=false,spArmed=false,markT=null;
-function openSheet(kind,data){form={kind:kind,d:data};armed=false;spArmed=false;delArmed='';drawSheet();sheet.hidden=false;requestAnimationFrame(function(){sheet.querySelectorAll('textarea.plin,textarea.grow').forEach(grow)});if(kind==='expense')needRate(data);setTimeout(function(){var f=sheet.querySelector('[data-autofocus]');if(f&&window.matchMedia('(min-width:960px)').matches)f.focus()},60)}
+function openSheet(kind,data){navArm();form={kind:kind,d:data};armed=false;spArmed=false;delArmed='';drawSheet();sheet.hidden=false;requestAnimationFrame(function(){sheet.querySelectorAll('textarea.plin,textarea.grow').forEach(grow)});if(kind==='expense')needRate(data);setTimeout(function(){var f=sheet.querySelector('[data-autofocus]');if(f&&window.matchMedia('(min-width:960px)').matches)f.focus()},60)}
 function closeSheet(){sheet.hidden=true;form=null;sheet.innerHTML='';delArmed=''}
 function segH(name,opts,val){return '<div class="seg" role="group">'+opts.map(function(o){return '<button type="button" data-f="'+name+'" data-v="'+esc(o[0])+'" aria-pressed="'+(String(val)===String(o[0]))+'">'+o[1]+'</button>'}).join('')+'</div>'}
 function chipsH(name,opts,val){return '<div class="chips">'+opts.map(function(o){return '<button type="button" class="chip" data-f="'+name+'" data-v="'+esc(o[0])+'" aria-pressed="'+(String(val)===String(o[0]))+'">'+o[1]+'</button>'}).join('')+'</div>'}
@@ -1662,8 +1673,8 @@ var tt=null;
 function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},2000)}
 
 /* ================= Version ================= */
-var APPV='30';
-var BUILT='Nov 17, 2026 4:50 PM';
+var APPV='31';
+var BUILT='Nov 17, 2026 5:30 PM';
 var APP_URL='https://hellong-cpu.github.io/jeremina2026/';
 function inviteLink(){return APP_URL+'?join='+spaceId()}
 
@@ -1929,6 +1940,7 @@ document.addEventListener('visibilitychange',updTry);
 /* ================= Start ================= */
 (function boot(){
   readInvite();
+  try{history.replaceState({jm:0},'');history.pushState({jm:1},'')}catch(e){}
   var C=lsGet('cache',null);
   if(C&&C.sid){cachedSid=C.sid;cachedUid=C.uid||'';if(C.space)space=C.space;SHC.forEach(function(c){S[c]=Array.isArray(C[c])?C[c]:[]})}
   render();
