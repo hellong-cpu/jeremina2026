@@ -26,6 +26,7 @@ async function main() {
         console.log(`member #${i + 1}: ${toks.length} device(s) [${toks.map(([, v]) => (v && v.ua) || '?').join(', ')}], turned off: ${off.join(', ') || 'none'}`);
         if (toks.length) {
           const r = await admin.messaging().sendEach(toks.map(([, v]) => ({ token: v.t, data: TEST ? { title: '💛 Test from Jeremina', body: 'If you can read this, notifications work on this phone.', tag: 'test', url: APP_URL } : { title: 'x' }, webpush: { headers: { Urgency: 'high', TTL: '3600' } } })), !TEST);
+          if (TEST) { const d = {}; r.responses.forEach((x, j) => { const c = x.error && x.error.code; if (c === 'messaging/registration-token-not-registered' || c === 'messaging/invalid-registration-token') { d['tokens.' + toks[j][0]] = admin.firestore.FieldValue.delete(); d['dead.' + toks[j][0]] = Date.now(); } }); if (Object.keys(d).length) { await p.ref.update(d); console.log('  removed broken device(s); the app will re-register on next open'); } }
           r.responses.forEach((x, j) => console.log(`  device ${j + 1} (${toks[j][1].ua || '?'}, added ${new Date(toks[j][1].at || 0).toISOString().slice(0, 10)}): ${x.success ? 'OK' : (x.error && x.error.code)}`));
         }
       }
@@ -102,9 +103,9 @@ async function main() {
         stats.failed++;
         const code = r.error && r.error.code;
         console.log(`  failed: ${m.pref || 'bundle'} → member #${space.members.indexOf(m.to) + 1} (${toks[i][1].ua || '?'}): ${code}`);
-        if (code === 'messaging/registration-token-not-registered' || code === 'messaging/invalid-registration-token') dead['tokens.' + toks[i][0]] = FV.delete();
+        if (code === 'messaging/registration-token-not-registered' || code === 'messaging/invalid-registration-token') { dead['tokens.' + toks[i][0]] = FV.delete(); dead['dead.' + toks[i][0]] = now; }
       });
-      if (Object.keys(dead).length) { stats.removed += Object.keys(dead).length; await db.collection('users').doc(m.to).collection('meta').doc('push').update(dead); Object.keys(dead).forEach(k => delete push[m.to].tokens[k.slice(7)]); }
+      if (Object.keys(dead).length) { stats.removed += Object.keys(dead).filter(k => k.startsWith('tokens.')).length; await db.collection('users').doc(m.to).collection('meta').doc('push').update(dead); Object.keys(dead).forEach(k => { if (k.startsWith('tokens.')) delete push[m.to].tokens[k.slice(7)]; }); }
     }
 
     st.last = now;
